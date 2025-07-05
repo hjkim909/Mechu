@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 import 'recommendation_result_screen.dart';
+import 'location_setting_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double _peopleCount = 2.0; // 기본값 2명
   bool _isLoading = false;
+  UserLocation? _selectedLocation;
   
   final LocationService _locationService = LocationService();
   final RecommendationService _recommendationService = RecommendationService();
@@ -26,6 +28,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initializeServices() async {
     await _userService.initialize();
+    _loadCurrentLocation();
+  }
+
+  Future<void> _loadCurrentLocation() async {
+    try {
+      final location = await _locationService.getCurrentLocation();
+      setState(() {
+        _selectedLocation = location;
+      });
+    } catch (e) {
+      // 기본값 유지
+    }
+  }
+
+  Future<void> _navigateToLocationSetting() async {
+    final result = await Navigator.of(context).push<UserLocation>(
+      MaterialPageRoute(
+        builder: (context) => const LocationSettingScreen(),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedLocation = result;
+      });
+    }
   }
 
   Future<void> _getRecommendations() async {
@@ -36,8 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      // 현재 위치 가져오기
-      final userLocation = await _locationService.getCurrentLocation();
+      // 선택된 위치 또는 현재 위치 사용
+      final userLocation = _selectedLocation ?? await _locationService.getCurrentLocation();
       
       // 빠른 추천 요청
       final recommendations = await _recommendationService.getQuickRecommendations(
@@ -101,33 +129,46 @@ class _HomeScreenState extends State<HomeScreen> {
               // 상단 여백
               const SizedBox(height: 32),
 
-              // 현재 위치 표시
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      color: colorScheme.onPrimaryContainer,
-                      size: 20,
+              // 현재 위치 표시 (터치 가능)
+              GestureDetector(
+                onTap: _navigateToLocationSetting,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: colorScheme.primary.withOpacity(0.3),
+                      width: 1,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '강남역',
-                      style: theme.textTheme.titleMedium?.copyWith(
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.location_on,
                         color: colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w600,
+                        size: 20,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Text(
+                        _selectedLocation?.address ?? '강남역',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.edit,
+                        color: colorScheme.onPrimaryContainer.withOpacity(0.7),
+                        size: 16,
+                      ),
+                    ],
+                  ),
                 ),
               ),
 

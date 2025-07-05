@@ -3,6 +3,7 @@ import '../models/models.dart';
 import '../services/services.dart';
 import 'recommendation_result_screen.dart';
 import 'location_setting_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -120,6 +121,18 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
         backgroundColor: colorScheme.surface,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/models.dart';
 import '../providers/providers.dart';
 import '../services/services.dart';
 import 'recommendation_result_screen.dart';

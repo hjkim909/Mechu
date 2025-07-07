@@ -6,6 +6,7 @@ import '../services/services.dart';
 import 'recommendation_result_screen.dart';
 import 'location_setting_screen.dart';
 import 'settings_screen.dart';
+import 'menu_selection_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,47 +44,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _getRecommendations() async {
-    final recommendationProvider = context.read<RecommendationProvider>();
-    final locationProvider = context.read<LocationProvider>();
-    final userProvider = context.read<UserProvider>();
-
-    if (recommendationProvider.isLoading) return;
-
-    try {
-      // 추천 요청
-      await recommendationProvider.getRecommendations(
-        location: locationProvider.currentLocation,
-        peopleCount: _peopleCount.round(),
-        user: userProvider.currentUser,
-      );
-
-      if (mounted && recommendationProvider.hasRecommendations) {
-        // 현재 위치를 UserLocation으로 변환
-        final locationService = LocationService();
-        final userLocation = await locationService.getLocationFromAddress(locationProvider.currentLocation) 
-            ?? const UserLocation(latitude: 37.4979517, longitude: 127.0276188, address: '강남역');
-        
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => RecommendationResultScreen(
-              restaurants: recommendationProvider.recommendations,
-              numberOfPeople: _peopleCount.round(),
-              userLocation: userLocation,
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('추천을 가져오는데 실패했습니다: $e'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    // 메뉴 선택 화면으로 이동
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MenuSelectionScreen(
+          numberOfPeople: _peopleCount.round(),
+        ),
+      ),
+    );
   }
 
   @override

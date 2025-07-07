@@ -5,12 +5,14 @@ class RecommendationResultScreen extends StatelessWidget {
   final List<Restaurant> restaurants;
   final int numberOfPeople;
   final UserLocation userLocation;
+  final String? selectedCategory;
 
   const RecommendationResultScreen({
     super.key,
     required this.restaurants,
     required this.numberOfPeople,
     required this.userLocation,
+    this.selectedCategory,
   });
 
   @override
@@ -21,7 +23,9 @@ class RecommendationResultScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${numberOfPeople}명을 위한 추천',
+          selectedCategory != null 
+              ? '$selectedCategory 맛집 ${restaurants.length}곳'
+              : '${numberOfPeople}명을 위한 추천',
           style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),

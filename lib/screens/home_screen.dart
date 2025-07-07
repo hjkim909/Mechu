@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/models.dart';
+import '../providers/providers.dart';
 import '../services/services.dart';
 import 'recommendation_result_screen.dart';
 import 'location_setting_screen.dart';
@@ -14,71 +16,57 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   double _peopleCount = 2.0; // 기본값 2명
-  bool _isLoading = false;
-  UserLocation? _selectedLocation;
-  
-  final LocationService _locationService = LocationService();
-  final RecommendationService _recommendationService = RecommendationService();
-  final UserService _userService = UserService();
 
   @override
   void initState() {
     super.initState();
-    _initializeServices();
+    _initializeProviders();
   }
 
-  Future<void> _initializeServices() async {
-    await _userService.initialize();
-    _loadCurrentLocation();
-  }
-
-  Future<void> _loadCurrentLocation() async {
-    try {
-      final location = await _locationService.getCurrentLocation();
-      setState(() {
-        _selectedLocation = location;
-      });
-    } catch (e) {
-      // 기본값 유지
-    }
+  Future<void> _initializeProviders() async {
+    final userProvider = context.read<UserProvider>();
+    final locationProvider = context.read<LocationProvider>();
+    
+    // 사용자 및 위치 정보 초기화
+    await userProvider.initializeUser();
+    await locationProvider.initializeLocation();
+    await locationProvider.loadFavoriteLocations();
   }
 
   Future<void> _navigateToLocationSetting() async {
-    final result = await Navigator.of(context).push<UserLocation>(
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const LocationSettingScreen(),
       ),
     );
-
-    if (result != null) {
-      setState(() {
-        _selectedLocation = result;
-      });
-    }
+    // LocationProvider에서 상태가 자동으로 업데이트됨
   }
 
   Future<void> _getRecommendations() async {
-    if (_isLoading) return;
+    final recommendationProvider = context.read<RecommendationProvider>();
+    final locationProvider = context.read<LocationProvider>();
+    final userProvider = context.read<UserProvider>();
 
-    setState(() {
-      _isLoading = true;
-    });
+    if (recommendationProvider.isLoading) return;
 
     try {
-      // 선택된 위치 또는 현재 위치 사용
-      final userLocation = _selectedLocation ?? await _locationService.getCurrentLocation();
-      
-      // 빠른 추천 요청
-      final recommendations = await _recommendationService.getQuickRecommendations(
-        userLocation: userLocation,
-        numberOfPeople: _peopleCount.round(),
+      // 추천 요청
+      await recommendationProvider.getRecommendations(
+        location: locationProvider.currentLocation,
+        peopleCount: _peopleCount.round(),
+        user: userProvider.currentUser,
       );
 
-      if (mounted) {
+      if (mounted && recommendationProvider.hasRecommendations) {
+        // 현재 위치를 UserLocation으로 변환
+        final locationService = LocationService();
+        final userLocation = await locationService.getLocationFromAddress(locationProvider.currentLocation) 
+            ?? const UserLocation(latitude: 37.4979517, longitude: 127.0276188, address: '강남역');
+        
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => RecommendationResultScreen(
-              restaurants: recommendations,
+              restaurants: recommendationProvider.recommendations,
               numberOfPeople: _peopleCount.round(),
               userLocation: userLocation,
             ),
@@ -94,12 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: Colors.red,
           ),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
@@ -143,46 +125,60 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 32),
 
               // 현재 위치 표시 (터치 가능)
-              GestureDetector(
-                onTap: _navigateToLocationSetting,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: colorScheme.primary.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.location_on,
-                        color: colorScheme.onPrimaryContainer,
-                        size: 20,
+              Consumer<LocationProvider>(
+                builder: (context, locationProvider, child) {
+                  return GestureDetector(
+                    onTap: _navigateToLocationSetting,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _selectedLocation?.address ?? '강남역',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.w600,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: colorScheme.primary.withOpacity(0.3),
+                          width: 1,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        Icons.edit,
-                        color: colorScheme.onPrimaryContainer.withOpacity(0.7),
-                        size: 16,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (locationProvider.isLoading)
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.onPrimaryContainer,
+                              ),
+                            )
+                          else
+                            Icon(
+                              Icons.location_on,
+                              color: colorScheme.onPrimaryContainer,
+                              size: 20,
+                            ),
+                          const SizedBox(width: 8),
+                          Text(
+                            locationProvider.currentLocation,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: colorScheme.onPrimaryContainer,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.edit,
+                            color: colorScheme.onPrimaryContainer.withOpacity(0.7),
+                            size: 16,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
 
               // 중간 여백 (확장)
@@ -200,64 +196,68 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 32),
 
               // 추천 버튼
-              Container(
-                width: double.infinity,
-                height: 160,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      colorScheme.primary,
-                      colorScheme.primary.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(32),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colorScheme.primary.withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(32),
-                    onTap: _isLoading ? null : _getRecommendations,
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                                              child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _isLoading
-                                ? SizedBox(
-                                    width: 48,
-                                    height: 48,
-                                    child: CircularProgressIndicator(
-                                      color: colorScheme.onPrimary,
-                                      strokeWidth: 3,
-                                    ),
-                                  )
-                                : Icon(
-                                    Icons.restaurant_menu,
-                                    size: 48,
-                                    color: colorScheme.onPrimary,
-                                  ),
-                            const SizedBox(height: 12),
-                            Text(
-                              _isLoading ? '추천 중...' : '지금 추천받기!',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                color: colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+              Consumer<RecommendationProvider>(
+                builder: (context, recommendationProvider, child) {
+                  return Container(
+                    width: double.infinity,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.primary,
+                          colorScheme.primary.withOpacity(0.8),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.primary.withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
+                      ],
                     ),
-                  ),
-                ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(32),
+                        onTap: recommendationProvider.isLoading ? null : _getRecommendations,
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              recommendationProvider.isLoading
+                                  ? SizedBox(
+                                      width: 48,
+                                      height: 48,
+                                      child: CircularProgressIndicator(
+                                        color: colorScheme.onPrimary,
+                                        strokeWidth: 3,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.restaurant_menu,
+                                      size: 48,
+                                      color: colorScheme.onPrimary,
+                                    ),
+                              const SizedBox(height: 12),
+                              Text(
+                                recommendationProvider.isLoading ? '추천 중...' : '지금 추천받기!',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  color: colorScheme.onPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 48),

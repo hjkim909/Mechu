@@ -12,6 +12,14 @@ class UserService {
   /// 현재 로그인된 사용자
   User? get currentUser => _currentUser;
 
+  /// 현재 사용자 가져오기 (없으면 게스트 사용자 생성)
+  Future<User> getCurrentUser() async {
+    if (_currentUser == null) {
+      _currentUser = createGuestUser();
+    }
+    return _currentUser!;
+  }
+
   /// 사용자 로그인 (시뮬레이션)
   Future<User> loginUser(String userId) async {
     await Future.delayed(const Duration(seconds: 1)); // 로그인 시뮬레이션

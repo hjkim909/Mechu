@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../models/models.dart';
 
 /// 위치 관련 서비스
@@ -6,33 +9,118 @@ class LocationService {
   factory LocationService() => _instance;
   LocationService._internal();
 
-  /// 현재 위치 가져오기 (시뮬레이션)
+  /// 위치 권한 확인 및 요청
+  Future<bool> checkAndRequestLocationPermission() async {
+    try {
+      // 위치 서비스 활성화 확인
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw '위치 서비스가 비활성화되어 있습니다. 설정에서 위치 서비스를 활성화해주세요.';
+      }
+
+      // 위치 권한 확인
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw '위치 권한이 거부되었습니다.';
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        throw '위치 권한이 영구적으로 거부되었습니다. 설정에서 직접 권한을 허용해주세요.';
+      }
+
+      return true;
+    } catch (e) {
+      throw '위치 권한 확인 실패: $e';
+    }
+  }
+
+  /// 현재 위치 가져오기 (실제 GPS 사용)
   Future<UserLocation> getCurrentLocation() async {
-    // 실제 앱에서는 geolocator 패키지를 사용하여 GPS 위치를 가져옵니다
-    await Future.delayed(const Duration(seconds: 1)); // 네트워크 지연 시뮬레이션
-    
-    // 강남역 좌표로 하드코딩 (테스트용)
-    return const UserLocation(
-      latitude: 37.4979517,
-      longitude: 127.0276188,
-      address: '강남역',
-    );
+    try {
+      // 위치 권한 확인
+      bool hasPermission = await checkAndRequestLocationPermission();
+      if (!hasPermission) {
+        throw '위치 권한이 없습니다.';
+      }
+
+      // GPS 위치 가져오기
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      // 좌표를 주소로 변환 (현재는 시뮬레이션, 실제로는 Geocoding API 사용)
+      String address = await getAddressFromCoordinates(
+        position.latitude, 
+        position.longitude,
+      );
+
+      return UserLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        address: address,
+      );
+    } catch (e) {
+      // GPS 실패 시 기본값 반환
+      print('GPS 위치 가져오기 실패: $e');
+      return const UserLocation(
+        latitude: 37.4979517,
+        longitude: 127.0276188,
+        address: '강남역',
+      );
+    }
   }
 
   /// 좌표를 주소로 변환 (Reverse Geocoding)
   Future<String> getAddressFromCoordinates(double latitude, double longitude) async {
-    // 실제 앱에서는 Google Maps API나 카카오 API를 사용합니다
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // 좌표 기반 지역 추정 (실제로는 Geocoding API 사용)
+      String estimatedAddress = _estimateAddressFromCoordinates(latitude, longitude);
+      
+      return estimatedAddress;
+    } catch (e) {
+      print('주소 변환 실패: $e');
+      return '서울특별시';
+    }
+  }
+
+  /// 좌표로 대략적인 지역 추정
+  String _estimateAddressFromCoordinates(double latitude, double longitude) {
+    // 서울 주요 지역 좌표 범위 (실제로는 더 정확한 Geocoding API 사용)
     
-    // 시뮬레이션된 주소 반환
-    final mockAddresses = {
-      '37.4979517,127.0276188': '서울특별시 강남구 강남대로 396 (강남역)',
-      '37.5665,126.9780': '서울특별시 중구 세종대로 110 (시청)',
-      '37.5172,127.0473': '서울특별시 강남구 테헤란로 152 (역삼역)',
-    };
+    // 강남구 지역 (강남역, 역삼역, 선릉역 등)
+    if (latitude >= 37.49 && latitude <= 37.53 && longitude >= 127.02 && longitude <= 127.07) {
+      if (latitude <= 37.50 && longitude <= 127.04) return '강남역';
+      if (latitude <= 37.52 && longitude <= 127.05) return '역삼역';
+      if (latitude <= 37.53 && longitude <= 127.06) return '선릉역';
+      return '강남구';
+    }
     
-    final key = '${latitude.toStringAsFixed(7)},${longitude.toStringAsFixed(7)}';
-    return mockAddresses[key] ?? '서울특별시 강남구';
+    // 마포구 지역 (홍대, 합정, 상수 등)
+    if (latitude >= 37.54 && latitude <= 37.57 && longitude >= 126.91 && longitude <= 126.94) {
+      if (longitude <= 126.925) return '홍대입구역';
+      if (longitude <= 126.935) return '합정역';
+      return '마포구';
+    }
+    
+    // 중구 지역 (명동, 시청 등)
+    if (latitude >= 37.56 && latitude <= 37.58 && longitude >= 126.97 && longitude <= 126.99) {
+      if (longitude >= 126.985) return '명동역';
+      return '시청역';
+    }
+    
+    // 용산구 지역 (이태원, 한강진 등)
+    if (latitude >= 37.53 && latitude <= 37.55 && longitude >= 126.98 && longitude <= 127.01) {
+      return '이태원역';
+    }
+    
+    // 기본값
+    return '서울특별시';
   }
 
   /// 주소를 좌표로 변환 (Geocoding)
@@ -69,14 +157,14 @@ class LocationService {
     // Haversine 공식을 사용한 거리 계산
     const double earthRadius = 6371; // 지구 반지름 (km)
     
-    final double lat1Rad = lat1 * (3.14159 / 180);
-    final double lat2Rad = lat2 * (3.14159 / 180);
-    final double deltaLat = (lat2 - lat1) * (3.14159 / 180);
-    final double deltaLon = (lon2 - lon1) * (3.14159 / 180);
+    final double lat1Rad = lat1 * (math.pi / 180);
+    final double lat2Rad = lat2 * (math.pi / 180);
+    final double deltaLat = (lat2 - lat1) * (math.pi / 180);
+    final double deltaLon = (lon2 - lon1) * (math.pi / 180);
     
-    final double a = (sin(deltaLat / 2) * sin(deltaLat / 2)) +
-        (cos(lat1Rad) * cos(lat2Rad) * sin(deltaLon / 2) * sin(deltaLon / 2));
-    final double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    final double a = (math.sin(deltaLat / 2) * math.sin(deltaLat / 2)) +
+        (math.cos(lat1Rad) * math.cos(lat2Rad) * math.sin(deltaLon / 2) * math.sin(deltaLon / 2));
+    final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     
     return earthRadius * c;
   }
@@ -93,67 +181,44 @@ class LocationService {
     }
   }
 
-  // 수학 함수들 (dart:math를 import하지 않고 직접 구현)
-  double sin(double x) => _sin(x);
-  double cos(double x) => _cos(x);
-  double sqrt(double x) => _sqrt(x);
-  double atan2(double y, double x) => _atan2(y, x);
-
-  // 간단한 수학 함수 구현 (정확도는 제한적)
-  double _sin(double x) {
-    // Taylor series approximation
-    double result = x;
-    double term = x;
-    for (int i = 1; i < 10; i++) {
-      term *= -x * x / ((2 * i) * (2 * i + 1));
-      result += term;
-    }
-    return result;
+  /// 위치 스트림 (실시간 위치 추적용)
+  Stream<UserLocation> getLocationStream() {
+    return Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10, // 10미터 이상 이동 시 업데이트
+      ),
+    ).asyncMap((position) async {
+      String address = await getAddressFromCoordinates(
+        position.latitude, 
+        position.longitude,
+      );
+      
+      return UserLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        address: address,
+      );
+    });
   }
 
-  double _cos(double x) {
-    // Taylor series approximation
-    double result = 1;
-    double term = 1;
-    for (int i = 1; i < 10; i++) {
-      term *= -x * x / ((2 * i - 1) * (2 * i));
-      result += term;
-    }
-    return result;
+  /// 위치 서비스 활성화 여부 확인
+  Future<bool> isLocationServiceEnabled() async {
+    return await Geolocator.isLocationServiceEnabled();
   }
 
-  double _sqrt(double x) {
-    if (x < 0) return double.nan;
-    if (x == 0) return 0;
-    
-    double guess = x / 2;
-    for (int i = 0; i < 10; i++) {
-      guess = (guess + x / guess) / 2;
-    }
-    return guess;
+  /// 위치 권한 상태 확인
+  Future<LocationPermission> checkLocationPermission() async {
+    return await Geolocator.checkPermission();
   }
 
-  double _atan2(double y, double x) {
-    if (x > 0) return _atan(y / x);
-    if (x < 0 && y >= 0) return _atan(y / x) + 3.14159;
-    if (x < 0 && y < 0) return _atan(y / x) - 3.14159;
-    if (x == 0 && y > 0) return 3.14159 / 2;
-    if (x == 0 && y < 0) return -3.14159 / 2;
-    return 0; // x == 0 && y == 0
+  /// 앱 설정으로 이동
+  Future<void> openAppSettings() async {
+    await Geolocator.openAppSettings();
   }
 
-  double _atan(double x) {
-    // Taylor series approximation for small values
-    if (x.abs() > 1) {
-      return (3.14159 / 2) - _atan(1 / x);
-    }
-    
-    double result = x;
-    double term = x;
-    for (int i = 1; i < 10; i++) {
-      term *= -x * x;
-      result += term / (2 * i + 1);
-    }
-    return result;
+  /// 위치 설정으로 이동
+  Future<void> openLocationSettings() async {
+    await Geolocator.openLocationSettings();
   }
 } 

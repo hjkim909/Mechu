@@ -67,6 +67,14 @@ Flutter를 사용한 메뉴 추천 앱 개발
   - [x] 인기 순위 시스템 추가 (1-3위 특별 표시, 불꽃 아이콘)
   - [x] 위치 기반 타이틀 ("강남역 인기 메뉴")
   - [x] 3열 그리드 레이아웃으로 더 많은 메뉴 표시
+- [x] 사용자 설정 저장 기능 (SharedPreferences)
+  - [x] shared_preferences 패키지 추가
+  - [x] PreferencesService 클래스 생성
+  - [x] 사용자 이름, 선호 메뉴, 알레르기 정보 저장
+  - [x] 현재 위치, 즐겨찾기 위치 저장
+  - [x] 인원수 선택, 테마 설정 저장
+  - [x] Provider들에 설정 저장/불러오기 로직 추가
+  - [x] 앱 재시작 후 설정 유지 기능 완료
 
 ### 다음 단계
 - [x] Flutter 실행 권한 문제 해결 (Android Studio 사용)
@@ -74,7 +82,7 @@ Flutter를 사용한 메뉴 추천 앱 개발
 - [x] 위치 설정 화면 개발
 - [x] 기본 설정 화면 개발
 - [x] Provider 상태 관리 구현
-- [ ] 사용자 설정 저장 기능 (SharedPreferences)
+- [x] 사용자 설정 저장 기능 (SharedPreferences)
 - [ ] 실제 위치 서비스 연동 (GPS)
 - [ ] 외부 API 연동 (음식점 데이터)
 - [ ] 테마 변경 기능 구현
@@ -119,6 +127,13 @@ Flutter를 사용한 메뉴 추천 앱 개발
   - flutter_development_checklist.md 생성
   - 새로운 화면 개발 시 필수 체크리스트 및 템플릿 제공
   - 일반적인 에러 패턴 및 해결책 문서화
+- 2024년 12월 - 사용자 설정 저장 기능 구현 완료 🎉
+  - SharedPreferences 패키지 추가 및 PreferencesService 클래스 생성
+  - 사용자 이름, 선호 메뉴, 알레르기 정보 저장 기능
+  - 현재 위치, 즐겨찾기 위치 저장 기능
+  - 인원수 선택, 테마 설정 저장 기능
+  - Provider 패턴과 연동하여 앱 재시작 후 설정 유지
+  - Android NDK 버전 충돌 해결 (27.0.12077973)
 
 ## 참고 사항
 ### Flutter 실행 권한 문제 해결 방법 (macOS)

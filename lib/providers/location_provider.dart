@@ -76,6 +76,34 @@ class LocationProvider with ChangeNotifier {
     }
   }
 
+  /// 위치 권한 상태 확인
+  Future<bool> checkLocationPermission() async {
+    try {
+      return await _locationService.checkAndRequestLocationPermission();
+    } catch (e) {
+      _setError('위치 권한 확인 실패: $e');
+      return false;
+    }
+  }
+
+  /// 위치 설정으로 이동
+  Future<void> openLocationSettings() async {
+    try {
+      await _locationService.openLocationSettings();
+    } catch (e) {
+      _setError('설정 열기 실패: $e');
+    }
+  }
+
+  /// 앱 설정으로 이동
+  Future<void> openAppSettings() async {
+    try {
+      await _locationService.openAppSettings();
+    } catch (e) {
+      _setError('앱 설정 열기 실패: $e');
+    }
+  }
+
   /// 즐겨찾기 위치 추가
   Future<void> addFavoriteLocation(String location) async {
     if (_favoriteLocations.contains(location)) return;

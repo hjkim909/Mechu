@@ -52,6 +52,39 @@ class _HomeScreenState extends State<HomeScreen> {
     // LocationProvider에서 상태가 자동으로 업데이트됨
   }
 
+  /// GPS를 통한 현재 위치 가져오기
+  Future<void> _getCurrentLocationFromGPS() async {
+    final locationProvider = context.read<LocationProvider>();
+    
+    try {
+      await locationProvider.getCurrentLocationFromGPS();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('현재 위치를 ${locationProvider.currentLocation}(으)로 설정했습니다'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('위치 권한을 확인해주세요'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Theme.of(context).colorScheme.error,
+            action: SnackBarAction(
+              label: '설정',
+              onPressed: () => locationProvider.openAppSettings(),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _getRecommendations() async {
     // 메뉴 선택 화면으로 이동
     Navigator.of(context).push(
@@ -104,56 +137,103 @@ class _HomeScreenState extends State<HomeScreen> {
               // 현재 위치 표시 (터치 가능)
               Consumer<LocationProvider>(
                 builder: (context, locationProvider, child) {
-                  return GestureDetector(
-                    onTap: _navigateToLocationSetting,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: colorScheme.primary.withOpacity(0.3),
-                          width: 1,
+                  return Column(
+                    children: [
+                      GestureDetector(
+                        onTap: _navigateToLocationSetting,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: colorScheme.primary.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (locationProvider.isLoading)
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colorScheme.onPrimaryContainer,
+                                  ),
+                                )
+                              else
+                                Icon(
+                                  Icons.location_on,
+                                  color: colorScheme.onPrimaryContainer,
+                                  size: 20,
+                                ),
+                              const SizedBox(width: 8),
+                              Text(
+                                locationProvider.currentLocation,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.edit,
+                                color: colorScheme.onPrimaryContainer.withOpacity(0.7),
+                                size: 16,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (locationProvider.isLoading)
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: colorScheme.onPrimaryContainer,
-                              ),
-                            )
-                          else
-                            Icon(
-                              Icons.location_on,
-                              color: colorScheme.onPrimaryContainer,
-                              size: 20,
-                            ),
-                          const SizedBox(width: 8),
-                          Text(
-                            locationProvider.currentLocation,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: colorScheme.onPrimaryContainer,
-                              fontWeight: FontWeight.w600,
-                            ),
+                      
+                      const SizedBox(height: 12),
+                      
+                      // GPS 현재 위치 버튼
+                      ElevatedButton.icon(
+                        onPressed: locationProvider.isLoading 
+                            ? null 
+                            : () => _getCurrentLocationFromGPS(),
+                        icon: Icon(
+                          Icons.my_location,
+                          size: 16,
+                          color: colorScheme.onSecondaryContainer,
+                        ),
+                        label: Text(
+                          '현재 위치로 설정',
+                          style: TextStyle(
+                            color: colorScheme.onSecondaryContainer,
+                            fontSize: 12,
                           ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.edit,
-                            color: colorScheme.onPrimaryContainer.withOpacity(0.7),
-                            size: 16,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.secondaryContainer,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
                           ),
-                        ],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
                       ),
-                    ),
+                      
+                      if (locationProvider.error != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          locationProvider.error!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.error,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ],
                   );
                 },
               ),

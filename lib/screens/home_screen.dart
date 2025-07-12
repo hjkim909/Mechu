@@ -21,7 +21,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _loadSavedSettings();
     _initializeProviders();
+  }
+
+  /// 저장된 설정 불러오기
+  void _loadSavedSettings() {
+    final savedNumberOfPeople = PreferencesService.getSelectedNumberOfPeople();
+    setState(() {
+      _peopleCount = savedNumberOfPeople.toDouble();
+    });
   }
 
   Future<void> _initializeProviders() async {
@@ -269,6 +278,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           setState(() {
                             _peopleCount = value;
                           });
+                          // 설정 저장
+                          PreferencesService.setSelectedNumberOfPeople(value.round());
                         },
                       ),
                     ),

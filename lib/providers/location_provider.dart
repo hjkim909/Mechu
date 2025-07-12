@@ -22,9 +22,12 @@ class LocationProvider with ChangeNotifier {
   Future<void> initializeLocation() async {
     _setLoading(true);
     try {
-      // 실제 GPS 위치 서비스 연동
-      final userLocation = await _locationService.getCurrentLocation();
-      _currentLocation = userLocation.address ?? '강남역';
+      // 저장된 위치가 있으면 불러오기
+      _currentLocation = PreferencesService.getCurrentLocation();
+      
+      // 즐겨찾기 위치 불러오기
+      _favoriteLocations = PreferencesService.getFavoriteLocations();
+      
       await _loadNearbyLocations();
       _clearError();
     } catch (e) {
@@ -39,6 +42,10 @@ class LocationProvider with ChangeNotifier {
     _setLoading(true);
     try {
       _currentLocation = newLocation;
+      
+      // 설정 저장
+      await PreferencesService.setCurrentLocation(newLocation);
+      
       await _loadNearbyLocations();
       _clearError();
       notifyListeners();
@@ -55,6 +62,10 @@ class LocationProvider with ChangeNotifier {
     try {
       final userLocation = await _locationService.getCurrentLocation();
       _currentLocation = userLocation.address ?? '강남역';
+      
+      // 설정 저장
+      await PreferencesService.setCurrentLocation(_currentLocation);
+      
       await _loadNearbyLocations();
       _clearError();
       notifyListeners();
@@ -71,7 +82,10 @@ class LocationProvider with ChangeNotifier {
     
     try {
       _favoriteLocations.add(location);
-      // TODO: SharedPreferences에 저장
+      
+      // 설정 저장
+      await PreferencesService.setFavoriteLocations(_favoriteLocations);
+      
       _clearError();
       notifyListeners();
     } catch (e) {
@@ -83,7 +97,10 @@ class LocationProvider with ChangeNotifier {
   Future<void> removeFavoriteLocation(String location) async {
     try {
       _favoriteLocations.remove(location);
-      // TODO: SharedPreferences에서 제거
+      
+      // 설정 저장
+      await PreferencesService.setFavoriteLocations(_favoriteLocations);
+      
       _clearError();
       notifyListeners();
     } catch (e) {
@@ -154,12 +171,8 @@ class LocationProvider with ChangeNotifier {
   /// 즐겨찾기 위치 로드 (앱 시작 시)
   Future<void> loadFavoriteLocations() async {
     try {
-      // TODO: SharedPreferences에서 로드
-      _favoriteLocations = [
-        '강남역',
-        '홍대입구',
-        '명동',
-      ]; // 임시 데이터
+      // 저장된 즐겨찾기 위치 불러오기
+      _favoriteLocations = PreferencesService.getFavoriteLocations();
       _clearError();
       notifyListeners();
     } catch (e) {

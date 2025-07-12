@@ -21,11 +21,45 @@ class UserProvider with ChangeNotifier {
     _setLoading(true);
     try {
       _currentUser = await _userService.getCurrentUser();
+      
+      // 저장된 설정 불러오기
+      await _loadSavedPreferences();
+      
       _clearError();
     } catch (e) {
       _setError('사용자 정보를 불러올 수 없습니다: $e');
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// 저장된 설정 불러오기
+  Future<void> _loadSavedPreferences() async {
+    if (_currentUser == null) return;
+
+    try {
+      // 저장된 사용자 이름 불러오기
+      final savedName = PreferencesService.getUserName();
+      if (savedName != '게스트') {
+        _currentUser = _currentUser!.copyWith(name: savedName);
+      }
+
+      // 저장된 선호 메뉴 불러오기
+      final savedPreferredMenus = PreferencesService.getPreferredMenus();
+      // 저장된 알레르기 정보 불러오기
+      final savedAllergies = PreferencesService.getAllergies();
+      
+      if (savedPreferredMenus.isNotEmpty || savedAllergies.isNotEmpty) {
+        final updatedPreferences = _currentUser!.preferences.copyWith(
+          favoriteCategories: savedPreferredMenus,
+          allergies: savedAllergies,
+        );
+        _currentUser = _currentUser!.copyWith(preferences: updatedPreferences);
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('저장된 설정을 불러오는 중 오류 발생: $e');
     }
   }
 
@@ -36,6 +70,10 @@ class UserProvider with ChangeNotifier {
     _setLoading(true);
     try {
       _currentUser = await _userService.updateUserName(newName);
+      
+      // 설정 저장
+      await PreferencesService.setUserName(newName);
+      
       _clearError();
       notifyListeners();
     } catch (e) {
@@ -74,6 +112,10 @@ class UserProvider with ChangeNotifier {
         await _userService.addFavoriteCategory(category);
       }
       _currentUser = _userService.currentUser;
+      
+      // 설정 저장
+      await PreferencesService.setPreferredMenus(_currentUser!.preferences.favoriteCategories);
+      
       _clearError();
       notifyListeners();
     } catch (e) {
@@ -133,6 +175,10 @@ class UserProvider with ChangeNotifier {
 
     try {
       _currentUser = await _userService.updateAllergies(allergies);
+      
+      // 설정 저장
+      await PreferencesService.setAllergies(allergies);
+      
       _clearError();
       notifyListeners();
     } catch (e) {

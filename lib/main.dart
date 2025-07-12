@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'providers/providers.dart';
+import 'services/services.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // SharedPreferences 초기화
+  await PreferencesService.init();
+  
   runApp(const MenuRecommendationApp());
 }
 

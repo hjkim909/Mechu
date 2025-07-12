@@ -20,55 +20,79 @@ class MenuSelectionScreen extends StatefulWidget {
 class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
   String? _selectedCategory;
 
-  // 메뉴 카테고리 데이터
+  // 구체적인 메뉴 데이터 (강남역 인기 메뉴 예시)
   final List<MenuCategory> _menuCategories = [
     MenuCategory(
-      name: '한식',
-      icon: '🍚',
-      description: '김치찌개, 불고기, 비빔밥',
+      name: '김치찌개',
+      icon: '🥘',
+      description: '매콤한 김치찌개와 따뜻한 밥',
       color: Colors.red,
     ),
     MenuCategory(
-      name: '중식',
-      icon: '🥢',
-      description: '짜장면, 짬뽕, 탕수육',
-      color: Colors.orange,
-    ),
-    MenuCategory(
-      name: '일식',
-      icon: '🍣',
-      description: '초밥, 라멘, 돈까스',
+      name: '삼겹살',
+      icon: '🥓',
+      description: '직화구이 삼겹살과 쌈채소',
       color: Colors.pink,
     ),
     MenuCategory(
-      name: '양식',
-      icon: '🍝',
-      description: '파스타, 스테이크, 피자',
-      color: Colors.green,
+      name: '짜장면',
+      icon: '🍜',
+      description: '진한 춘장소스의 짜장면',
+      color: Colors.brown,
     ),
     MenuCategory(
       name: '치킨',
       icon: '🍗',
-      description: '후라이드, 양념, 간장',
+      description: '바삭한 후라이드 & 양념치킨',
+      color: Colors.orange,
+    ),
+    MenuCategory(
+      name: '라멘',
+      icon: '🍲',
+      description: '진한 돈코츠 라멘',
       color: Colors.amber,
     ),
     MenuCategory(
-      name: '분식',
+      name: '떡볶이',
       icon: '🍢',
-      description: '떡볶이, 순대, 김밥',
+      description: '매콤달콤 떡볶이',
       color: Colors.deepOrange,
+    ),
+    MenuCategory(
+      name: '피자',
+      icon: '🍕',
+      description: '치즈 가득한 피자',
+      color: Colors.yellow,
+    ),
+    MenuCategory(
+      name: '파스타',
+      icon: '🍝',
+      description: '크림/토마토 파스타',
+      color: Colors.green,
+    ),
+    MenuCategory(
+      name: '햄버거',
+      icon: '🍔',
+      description: '수제 패티 햄버거',
+      color: Colors.red.shade800,
+    ),
+    MenuCategory(
+      name: '초밥',
+      icon: '🍣',
+      description: '신선한 회와 초밥',
+      color: Colors.teal,
+    ),
+    MenuCategory(
+      name: '갈비탕',
+      icon: '🍖',
+      description: '진한 사골 갈비탕',
+      color: Colors.brown.shade300,
     ),
     MenuCategory(
       name: '카페',
       icon: '☕',
-      description: '커피, 디저트, 브런치',
-      color: Colors.brown,
-    ),
-    MenuCategory(
-      name: '패스트푸드',
-      icon: '🍔',
-      description: '햄버거, 피자, 샌드위치',
-      color: Colors.red.shade800,
+      description: '아메리카노 & 디저트',
+      color: Colors.brown.shade600,
     ),
   ];
 
@@ -79,69 +103,100 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          '${widget.numberOfPeople}명을 위한 메뉴 선택',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+        title: Consumer<LocationProvider>(
+          builder: (context, locationProvider, child) {
+            return Text(
+              '${locationProvider.currentLocation} 인기 메뉴',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
         ),
         backgroundColor: colorScheme.surface,
         elevation: 0,
       ),
       body: Column(
         children: [
-          // 헤더 설명
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            color: colorScheme.primaryContainer.withOpacity(0.3),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.restaurant_menu,
-                  size: 32,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '어떤 메뉴를 드시고 싶나요?',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '메뉴를 선택하면 맛있는 음식점을 추천해드릴게요!',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
+                     // 헤더 설명
+           Consumer<LocationProvider>(
+             builder: (context, locationProvider, child) {
+               return Container(
+                 width: double.infinity,
+                 padding: const EdgeInsets.all(20),
+                 decoration: BoxDecoration(
+                   gradient: LinearGradient(
+                     colors: [
+                       colorScheme.primaryContainer.withOpacity(0.3),
+                       colorScheme.primaryContainer.withOpacity(0.1),
+                     ],
+                     begin: Alignment.topCenter,
+                     end: Alignment.bottomCenter,
+                   ),
+                 ),
+                 child: Column(
+                   children: [
+                     Row(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         Icon(
+                           Icons.trending_up,
+                           size: 24,
+                           color: colorScheme.primary,
+                         ),
+                         const SizedBox(width: 8),
+                         Text(
+                           'TOP 인기 메뉴',
+                           style: theme.textTheme.titleSmall?.copyWith(
+                             fontWeight: FontWeight.bold,
+                             color: colorScheme.primary,
+                           ),
+                         ),
+                       ],
+                     ),
+                     const SizedBox(height: 8),
+                     Text(
+                       '${locationProvider.currentLocation}에서 인기 있는 메뉴예요',
+                       style: theme.textTheme.titleLarge?.copyWith(
+                         fontWeight: FontWeight.bold,
+                         color: colorScheme.onSurface,
+                       ),
+                     ),
+                     const SizedBox(height: 4),
+                     Text(
+                       '${widget.numberOfPeople}명이 함께 드실 메뉴를 골라보세요!',
+                       style: theme.textTheme.bodyMedium?.copyWith(
+                         color: colorScheme.onSurfaceVariant,
+                       ),
+                     ),
+                   ],
+                 ),
+               );
+             },
+           ),
 
-          // 메뉴 카테고리 그리드
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.1,
-                ),
-                itemCount: _menuCategories.length,
-                itemBuilder: (context, index) {
-                  final category = _menuCategories[index];
-                  final isSelected = _selectedCategory == category.name;
-                  
-                  return _buildMenuCategoryCard(category, isSelected);
-                },
-              ),
-            ),
-          ),
+                     // 인기 메뉴 그리드
+           Expanded(
+             child: Padding(
+               padding: const EdgeInsets.all(16),
+               child: GridView.builder(
+                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                   crossAxisCount: 3, // 3열로 변경하여 더 많은 메뉴 표시
+                   crossAxisSpacing: 8,
+                   mainAxisSpacing: 8,
+                   childAspectRatio: 0.85, // 카드를 좀 더 세로로 길게
+                 ),
+                 itemCount: _menuCategories.length,
+                 itemBuilder: (context, index) {
+                   final category = _menuCategories[index];
+                   final isSelected = _selectedCategory == category.name;
+                   final rank = index + 1; // 인기 순위 표시
+                   
+                   return _buildMenuCategoryCard(category, isSelected, rank);
+                 },
+               ),
+             ),
+           ),
 
           // 하단 선택 완료 버튼
           if (_selectedCategory != null)
@@ -194,7 +249,7 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
     );
   }
 
-  Widget _buildMenuCategoryCard(MenuCategory category, bool isSelected) {
+  Widget _buildMenuCategoryCard(MenuCategory category, bool isSelected, int rank) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -214,7 +269,7 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
           });
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             gradient: isSelected
@@ -229,12 +284,47 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
                 : null,
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              // 상단에 순위 표시
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: rank <= 3 
+                          ? (rank == 1 ? Colors.amber : rank == 2 ? Colors.grey : Colors.brown.shade400)
+                          : colorScheme.secondary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        rank.toString(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (rank <= 3)
+                    Icon(
+                      Icons.local_fire_department,
+                      size: 16,
+                      color: Colors.orange,
+                    ),
+                ],
+              ),
+              
+              const SizedBox(height: 8),
+              
               // 메뉴 아이콘
               Container(
-                width: 60,
-                height: 60,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: isSelected 
                       ? colorScheme.primary 
@@ -244,7 +334,7 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
                 child: Center(
                   child: Text(
                     category.icon,
-                    style: const TextStyle(fontSize: 28),
+                    style: const TextStyle(fontSize: 20),
                   ),
                 ),
               ),
@@ -254,12 +344,13 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
               // 메뉴 이름
               Text(
                 category.name,
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: isSelected 
                       ? colorScheme.primary 
                       : colorScheme.onSurface,
                 ),
+                textAlign: TextAlign.center,
               ),
               
               const SizedBox(height: 4),
@@ -269,6 +360,7 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
                 category.description,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
+                  fontSize: 10,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,

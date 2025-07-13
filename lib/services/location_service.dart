@@ -262,6 +262,26 @@ class LocationService {
         longitude: 126.9780,
         address: '시청',
       ),
+      '개포동': const UserLocation(
+        latitude: 37.4789,
+        longitude: 127.0648,
+        address: '개포동',
+      ),
+      '개포역': const UserLocation(
+        latitude: 37.4789,
+        longitude: 127.0648,
+        address: '개포역',
+      ),
+      '선릉역': const UserLocation(
+        latitude: 37.5044,
+        longitude: 127.0488,
+        address: '선릉역',
+      ),
+      '압구정역': const UserLocation(
+        latitude: 37.5270,
+        longitude: 127.0289,
+        address: '압구정역',
+      ),
     };
     
     return mockLocations[address];

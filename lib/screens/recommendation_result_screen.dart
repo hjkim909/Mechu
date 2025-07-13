@@ -66,7 +66,9 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
           ? _buildEmptyState(context)
           : Column(
               children: [
-                _buildMapView(),
+                // 지도 표시 (조건부)
+                if (widget.restaurants.isNotEmpty && _markers.isNotEmpty)
+                  _buildMapView(),
                 Expanded(
                   child: _buildRecommendationList(context),
                 ),
@@ -76,14 +78,28 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
   }
 
   Widget _buildMapView() {
-    return SizedBox(
+    return Container(
       height: 250,
-      child: KakaoMap(
-        onMapCreated: (controller) {
-          _mapController = controller;
-        },
-        markers: _markers.toList(),
-        center: LatLng(widget.userLocation.latitude, widget.userLocation.longitude),
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: KakaoMap(
+          onMapCreated: (controller) {
+            _mapController = controller;
+          },
+          markers: _markers.toList(),
+          center: LatLng(widget.userLocation.latitude, widget.userLocation.longitude),
+        ),
       ),
     );
   }

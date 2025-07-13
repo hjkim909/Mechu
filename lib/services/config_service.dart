@@ -92,7 +92,7 @@ class ConfigService {
     // 실제 배포 시에는 이 메서드를 제거하거나 환경변수에서 가져오도록 변경
     
     // 여기에 실제 발급받은 키를 입력하세요.
-    setKakaoApiKey('2171c43affc50e2a2d004d91c9cba2fd'); // REST API 키
+    setKakaoApiKey('8188beb46343da3d67ecd74de684fa94'); // REST API 키
     setKakaoJsApiKey('2171c43affc50e2a2d004d91c9cba2fd'); // JavaScript 키
     // setNaverApiKey(clientId: 'YOUR_NAVER_CLIENT_ID', clientSecret: 'YOUR_NAVER_CLIENT_SECRET');
     

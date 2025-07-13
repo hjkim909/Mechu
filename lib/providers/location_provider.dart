@@ -25,6 +25,17 @@ class LocationProvider with ChangeNotifier {
       // 저장된 위치가 있으면 불러오기
       _currentLocation = PreferencesService.getCurrentLocation();
       
+      // 만약 저장된 위치가 기본값(강남역)이면 GPS 위치 시도
+      if (_currentLocation == '강남역') {
+        try {
+          await getCurrentLocationFromGPS();
+          print('GPS 위치 자동 설정 완료: $_currentLocation');
+        } catch (e) {
+          print('GPS 위치 자동 설정 실패, 기본값 사용: $e');
+          // GPS 실패 시 기본값 유지
+        }
+      }
+      
       // 즐겨찾기 위치 불러오기
       _favoriteLocations = PreferencesService.getFavoriteLocations();
       

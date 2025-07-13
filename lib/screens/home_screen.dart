@@ -182,32 +182,36 @@ class _HomeScreenState extends State<HomeScreen> {
                       
                       const SizedBox(height: 12),
                       
-                      // GPS 현재 위치 버튼
-                      ElevatedButton.icon(
-                        onPressed: locationProvider.isLoading 
-                            ? null 
-                            : () => _getCurrentLocationFromGPS(),
-                        icon: Icon(
-                          Icons.my_location,
-                          size: 16,
-                          color: colorScheme.onSecondaryContainer,
-                        ),
-                        label: Text(
-                          '현재 위치로 설정',
-                          style: TextStyle(
-                            color: colorScheme.onSecondaryContainer,
-                            fontSize: 12,
+                      // GPS 현재 위치 버튼 (더 눈에 띄게)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: locationProvider.isLoading 
+                              ? null 
+                              : () => _getCurrentLocationFromGPS(),
+                          icon: Icon(
+                            Icons.my_location,
+                            size: 18,
+                            color: colorScheme.onPrimary,
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colorScheme.secondaryContainer,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                          label: Text(
+                            '📍 현재 위치로 설정하기',
+                            style: TextStyle(
+                              color: colorScheme.onPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            elevation: 2,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
                           ),
                         ),
                       ),

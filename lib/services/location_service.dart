@@ -77,50 +77,168 @@ class LocationService {
   /// 좌표를 주소로 변환 (Reverse Geocoding)
   Future<String> getAddressFromCoordinates(double latitude, double longitude) async {
     try {
+      // TODO: 실제 서비스에서는 Geocoding API 사용
+      // 예시:
+      // - Google Maps Geocoding API
+      // - 카카오맵 좌표→주소 변환 API
+      // - 네이버 지도 Reverse Geocoding API
+      
       await Future.delayed(const Duration(milliseconds: 500));
       
-      // 좌표 기반 지역 추정 (실제로는 Geocoding API 사용)
-      String estimatedAddress = _estimateAddressFromCoordinates(latitude, longitude);
+      // 임시: 간단한 지역 추정 (실제로는 API 결과 사용)
+      String location = await _getSimpleLocationName(latitude, longitude);
       
-      return estimatedAddress;
+      return location;
     } catch (e) {
       print('주소 변환 실패: $e');
-      return '서울특별시';
+      return '현재 위치';
     }
   }
 
-  /// 좌표로 대략적인 지역 추정
-  String _estimateAddressFromCoordinates(double latitude, double longitude) {
-    // 서울 주요 지역 좌표 범위 (실제로는 더 정확한 Geocoding API 사용)
+  /// 간단한 위치명 추정 (API 대신 임시 사용)
+  Future<String> _getSimpleLocationName(double latitude, double longitude) async {
+    print('🌍 GPS 좌표: $latitude, $longitude');
     
-    // 강남구 지역 (강남역, 역삼역, 선릉역 등)
-    if (latitude >= 37.49 && latitude <= 37.53 && longitude >= 127.02 && longitude <= 127.07) {
-      if (latitude <= 37.50 && longitude <= 127.04) return '강남역';
-      if (latitude <= 37.52 && longitude <= 127.05) return '역삼역';
-      if (latitude <= 37.53 && longitude <= 127.06) return '선릉역';
+    // 서울인지 확인
+    if (latitude >= 37.4 && latitude <= 37.7 && longitude >= 126.8 && longitude <= 127.2) {
+      // 강남구 대략적 범위
+      if (latitude >= 37.47 && latitude <= 37.54 && longitude >= 127.01 && longitude <= 127.08) {
+        return '강남구';
+      }
+      // 마포구 대략적 범위  
+      if (latitude >= 37.54 && latitude <= 37.58 && longitude >= 126.90 && longitude <= 126.95) {
+        return '마포구';
+      }
+      // 서초구 대략적 범위
+      if (latitude >= 37.46 && latitude <= 37.50 && longitude >= 127.00 && longitude <= 127.05) {
+        return '서초구';
+      }
+      return '서울특별시';
+    }
+    
+    return '현재 위치';
+  }
+
+  /// 좌표로 세분화된 지역 추정
+  String _estimateAddressFromCoordinates(double latitude, double longitude) {
+    print('🌍 GPS 좌표: $latitude, $longitude'); // 디버그용 로그
+    
+    // 강남구 세분화
+    if (latitude >= 37.47 && latitude <= 37.54 && longitude >= 127.01 && longitude <= 127.08) {
+      // 개포동 지역
+      if (latitude >= 37.478 && latitude <= 37.495 && longitude >= 127.055 && longitude <= 127.075) {
+        return '개포동';
+      }
+      // 도곡동 지역
+      if (latitude >= 37.485 && latitude <= 37.505 && longitude >= 127.045 && longitude <= 127.065) {
+        return '도곡동';
+      }
+      // 대치동 지역
+      if (latitude >= 37.495 && latitude <= 37.515 && longitude >= 127.045 && longitude <= 127.065) {
+        return '대치동';
+      }
+      // 역삼동 지역
+      if (latitude >= 37.498 && latitude <= 37.518 && longitude >= 127.025 && longitude <= 127.045) {
+        return '역삼동';
+      }
+      // 강남역 근처
+      if (latitude >= 37.495 && latitude <= 37.505 && longitude >= 127.025 && longitude <= 127.035) {
+        return '강남역';
+      }
+      // 선릉역 근처
+      if (latitude >= 37.500 && latitude <= 37.510 && longitude >= 127.045 && longitude <= 127.055) {
+        return '선릉역';
+      }
+      // 삼성동 지역
+      if (latitude >= 37.505 && latitude <= 37.525 && longitude >= 127.055 && longitude <= 127.075) {
+        return '삼성동';
+      }
+      // 압구정동 지역
+      if (latitude >= 37.515 && latitude <= 37.535 && longitude >= 127.025 && longitude <= 127.045) {
+        return '압구정동';
+      }
+      // 청담동 지역
+      if (latitude >= 37.520 && latitude <= 37.540 && longitude >= 127.045 && longitude <= 127.065) {
+        return '청담동';
+      }
       return '강남구';
     }
     
-    // 마포구 지역 (홍대, 합정, 상수 등)
-    if (latitude >= 37.54 && latitude <= 37.57 && longitude >= 126.91 && longitude <= 126.94) {
-      if (longitude <= 126.925) return '홍대입구역';
-      if (longitude <= 126.935) return '합정역';
+    // 서초구 세분화
+    if (latitude >= 37.46 && latitude <= 37.50 && longitude >= 127.00 && longitude <= 127.05) {
+      // 서초동 지역
+      if (latitude >= 37.485 && latitude <= 37.505 && longitude >= 127.015 && longitude <= 127.035) {
+        return '서초동';
+      }
+      // 반포동 지역
+      if (latitude >= 37.500 && latitude <= 37.520 && longitude >= 127.005 && longitude <= 127.025) {
+        return '반포동';
+      }
+      return '서초구';
+    }
+    
+    // 마포구 세분화
+    if (latitude >= 37.54 && latitude <= 37.58 && longitude >= 126.90 && longitude <= 126.95) {
+      // 홍대 지역
+      if (latitude >= 37.548 && latitude <= 37.558 && longitude >= 126.920 && longitude <= 126.930) {
+        return '홍대입구';
+      }
+      // 합정 지역
+      if (latitude >= 37.548 && latitude <= 37.558 && longitude >= 126.908 && longitude <= 126.918) {
+        return '합정동';
+      }
+      // 상수동 지역
+      if (latitude >= 37.545 && latitude <= 37.555 && longitude >= 126.920 && longitude <= 126.930) {
+        return '상수동';
+      }
       return '마포구';
     }
     
-    // 중구 지역 (명동, 시청 등)
-    if (latitude >= 37.56 && latitude <= 37.58 && longitude >= 126.97 && longitude <= 126.99) {
-      if (longitude >= 126.985) return '명동역';
-      return '시청역';
+    // 중구 세분화
+    if (latitude >= 37.55 && latitude <= 37.58 && longitude >= 126.97 && longitude <= 127.00) {
+      // 명동 지역
+      if (latitude >= 37.560 && latitude <= 37.570 && longitude >= 126.980 && longitude <= 126.990) {
+        return '명동';
+      }
+      // 시청 지역
+      if (latitude >= 37.565 && latitude <= 37.575 && longitude >= 126.975 && longitude <= 126.985) {
+        return '시청';
+      }
+      return '중구';
     }
     
-    // 용산구 지역 (이태원, 한강진 등)
-    if (latitude >= 37.53 && latitude <= 37.55 && longitude >= 126.98 && longitude <= 127.01) {
-      return '이태원역';
+    // 용산구 세분화
+    if (latitude >= 37.52 && latitude <= 37.56 && longitude >= 126.97 && longitude <= 127.02) {
+      // 이태원 지역
+      if (latitude >= 37.530 && latitude <= 37.540 && longitude >= 126.990 && longitude <= 127.000) {
+        return '이태원';
+      }
+      // 한남동 지역
+      if (latitude >= 37.530 && latitude <= 37.540 && longitude >= 127.000 && longitude <= 127.010) {
+        return '한남동';
+      }
+      return '용산구';
     }
     
-    // 기본값
-    return '서울특별시';
+    // 송파구 세분화
+    if (latitude >= 37.47 && latitude <= 37.52 && longitude >= 127.08 && longitude <= 127.14) {
+      // 잠실 지역
+      if (latitude >= 37.510 && latitude <= 37.520 && longitude >= 127.080 && longitude <= 127.090) {
+        return '잠실동';
+      }
+      // 문정동 지역
+      if (latitude >= 37.485 && latitude <= 37.495 && longitude >= 127.115 && longitude <= 127.125) {
+        return '문정동';
+      }
+      return '송파구';
+    }
+    
+    // 기본값 (서울 내 다른 지역)
+    if (latitude >= 37.4 && latitude <= 37.7 && longitude >= 126.8 && longitude <= 127.2) {
+      return '서울특별시';
+    }
+    
+    return '현재 위치';
   }
 
   /// 주소를 좌표로 변환 (Geocoding)

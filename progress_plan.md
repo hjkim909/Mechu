@@ -76,6 +76,15 @@ Flutter를 사용한 메뉴 추천 앱 개발
   - [x] Provider들에 설정 저장/불러오기 로직 추가
   - [x] 앱 재시작 후 설정 유지 기능 완료
 
+- [x] 실제 위치 서비스 연동 (GPS)
+  - [x] geolocator, permission_handler 패키지 추가
+  - [x] Android/iOS 위치 권한 설정 추가
+  - [x] LocationService에 실제 GPS 기능 구현
+  - [x] 위치 권한 확인 및 요청 시스템
+  - [x] 좌표 기반 지역 추정 시스템
+  - [x] HomeScreen에 "현재 위치로 설정" 버튼 추가
+  - [x] GPS 실시간 위치 추적 기능 구현
+
 ### 다음 단계
 - [x] Flutter 실행 권한 문제 해결 (Android Studio 사용)
 - [x] 앱 실행 테스트 및 기능 검증
@@ -83,7 +92,7 @@ Flutter를 사용한 메뉴 추천 앱 개발
 - [x] 기본 설정 화면 개발
 - [x] Provider 상태 관리 구현
 - [x] 사용자 설정 저장 기능 (SharedPreferences)
-- [ ] 실제 위치 서비스 연동 (GPS)
+- [x] 실제 위치 서비스 연동 (GPS)
 - [ ] 외부 API 연동 (음식점 데이터)
 - [ ] 테마 변경 기능 구현
 - [ ] 코드 생성 실행 (build_runner) - 필요시
@@ -134,6 +143,14 @@ Flutter를 사용한 메뉴 추천 앱 개발
   - 인원수 선택, 테마 설정 저장 기능
   - Provider 패턴과 연동하여 앱 재시작 후 설정 유지
   - Android NDK 버전 충돌 해결 (27.0.12077973)
+- 2024년 12월 - 실제 위치 서비스 연동 (GPS) 구현 완료 🎉
+  - geolocator, permission_handler 패키지 추가
+  - Android/iOS 위치 권한 설정 완료
+  - LocationService에 실제 GPS 기능 구현
+  - 위치 권한 확인 및 요청 시스템 구축
+  - 좌표 기반 지역 추정 시스템 (서울 주요 지역)
+  - HomeScreen에 "현재 위치로 설정" 버튼 추가
+  - GPS 실시간 위치 추적 및 자동 주소 변환 기능
 
 ## 참고 사항
 ### Flutter 실행 권한 문제 해결 방법 (macOS)

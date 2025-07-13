@@ -5,7 +5,7 @@ class ConfigService {
   ConfigService._internal();
 
   // API 키들 (실제 배포 시에는 환경변수나 보안 저장소에서 가져와야 함)
-  static const String _defaultKakaoApiKey = '2171c43affc50e2a2d004d91c9cba2fd';
+  static const String _defaultKakaoApiKey = 'SAMPLE_KAKAO_API_KEY';
   static const String _defaultNaverClientId = 'YOUR_NAVER_CLIENT_ID_HERE';
   static const String _defaultNaverClientSecret = 'YOUR_NAVER_CLIENT_SECRET_HERE';
   static const String _defaultKakaoJsApiKey = 'YOUR_KAKAO_JAVASCRIPT_KEY_HERE';

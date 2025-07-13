@@ -2,6 +2,7 @@ import '../models/models.dart';
 import '../utils/sample_data.dart';
 import 'location_service.dart';
 import 'kakao_api_service.dart';
+import 'naver_api_service.dart'; // 네이버 서비스 추가
 import 'config_service.dart';
 
 /// 메뉴 추천 서비스
@@ -12,62 +13,61 @@ class RecommendationService {
 
   final LocationService _locationService = LocationService();
   final KakaoApiService _kakaoApiService = KakaoApiService();
+  final NaverApiService _naverApiService = NaverApiService(); // 네이버 서비스 추가
   final ConfigService _configService = ConfigService();
 
   /// 메뉴 추천 요청을 처리하여 음식점 목록 반환 (실제 API 사용)
   Future<List<Restaurant>> getRecommendations(RecommendationRequest request) async {
-    // ConfigService로 API 사용 여부 확인
     if (_configService.useRealApi) {
       try {
         List<Restaurant> apiRestaurants = [];
+        List<Future<List<Restaurant>>> futures = [];
 
         // 선호 카테고리가 있다면 해당 카테고리로 검색
         if (request.preferences?.preferredCategories.isNotEmpty == true) {
           for (String category in request.preferences!.preferredCategories) {
-            try {
-              List<Restaurant> categoryResults = await _kakaoApiService.searchRestaurantsByKeyword(
+            if (_configService.hasValidKakaoApiKey) {
+              futures.add(_kakaoApiService.searchRestaurantsByKeyword(
                 keyword: category,
                 latitude: request.userLocation.latitude,
                 longitude: request.userLocation.longitude,
-                radius: 5000, // 5km 반경
+                radius: 5000,
                 size: 5,
-              );
-              apiRestaurants.addAll(categoryResults);
-            } catch (e) {
-              print('카테고리 $category 검색 실패: $e');
+              ));
+            }
+            if (_configService.hasValidNaverApiKey) {
+              futures.add(_naverApiService.searchRestaurantsByKeyword(
+                keyword: category,
+                display: 5,
+              ));
             }
           }
         } else {
           // 선호 카테고리가 없다면 일반적인 맛집 검색
-          apiRestaurants = await _kakaoApiService.searchRestaurantsByKeyword(
-            keyword: '맛집',
-            latitude: request.userLocation.latitude,
-            longitude: request.userLocation.longitude,
-            radius: 5000,
-            size: 10,
-          );
+          if (_configService.hasValidKakaoApiKey) {
+            futures.add(_kakaoApiService.searchRestaurantsByKeyword(
+              keyword: '맛집',
+              latitude: request.userLocation.latitude,
+              longitude: request.userLocation.longitude,
+              radius: 5000,
+              size: 10,
+            ));
+          }
+          if (_configService.hasValidNaverApiKey) {
+            futures.add(_naverApiService.searchRestaurantsByKeyword(
+              keyword: '맛집',
+              display: 10,
+            ));
+          }
+        }
+
+        final results = await Future.wait(futures);
+        for (var result in results) {
+          apiRestaurants.addAll(result);
         }
 
         if (apiRestaurants.isNotEmpty) {
-          // API 결과에 추가 필터링 및 정렬 적용
-          List<Restaurant> filteredRestaurants = _filterRestaurants(
-            apiRestaurants,
-            request,
-          );
-
-          // 중복 제거 (같은 ID의 음식점 제거)
-          Map<String, Restaurant> uniqueRestaurants = {};
-          for (Restaurant restaurant in filteredRestaurants) {
-            uniqueRestaurants[restaurant.id] = restaurant;
-          }
-
-          List<Restaurant> finalResults = uniqueRestaurants.values.toList();
-          
-          // 거리 기준으로 정렬
-          finalResults = _sortByDistance(finalResults, request.userLocation);
-
-          // 상위 10개만 반환
-          return finalResults.take(10).toList();
+          return _processApiResults(apiRestaurants, request);
         }
       } catch (e) {
         print('API 추천 검색 실패, 샘플 데이터 사용: $e');
@@ -76,23 +76,7 @@ class RecommendationService {
       print('개발 모드: 샘플 데이터 사용');
     }
 
-    // API 호출 실패 시 또는 개발 모드일 때: 기존 샘플 데이터 로직 사용
-    List<Restaurant> allRestaurants = _getAllRestaurants();
-
-    // 필터링 및 정렬
-    List<Restaurant> filteredRestaurants = _filterRestaurants(
-      allRestaurants,
-      request,
-    );
-
-    // 거리 기준으로 정렬
-    filteredRestaurants = _sortByDistance(
-      filteredRestaurants,
-      request.userLocation,
-    );
-
-    // 상위 10개만 반환
-    return filteredRestaurants.take(10).toList();
+    return _getSampleData(request);
   }
 
   /// 현재 시간 기반 빠른 추천
@@ -129,20 +113,45 @@ class RecommendationService {
     required String category,
     int limit = 5,
   }) async {
-    // ConfigService로 API 사용 여부 확인
     if (_configService.useRealApi) {
+      print('--- API 모드: 카테고리별 추천 ($category) ---');
       try {
-        // 실제 카카오 API를 통한 음식점 검색
-        List<Restaurant> apiRestaurants = await _kakaoApiService.searchRestaurantsByKeyword(
-          keyword: category,
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
-          radius: 3000, // 3km 반경
-          size: limit,
-        );
+        List<Restaurant> apiRestaurants = [];
+        List<Future<List<Restaurant>>> futures = [];
+
+        if (_configService.hasValidKakaoApiKey) {
+          print('  [Kakao] API 호출 시도');
+          futures.add(_kakaoApiService.searchRestaurantsByKeyword(
+            keyword: category,
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+            radius: 3000,
+            size: limit,
+          ).catchError((e) {
+            print('  [Kakao] API 오류: $e');
+            return <Restaurant>[];
+          }));
+        }
+        if (_configService.hasValidNaverApiKey) {
+          print('  [Naver] API 호출 시도');
+          futures.add(_naverApiService.searchRestaurantsByKeyword(
+            keyword: category,
+            display: limit,
+          ).catchError((e) {
+            print('  [Naver] API 오류: $e');
+            return <Restaurant>[];
+          }));
+        }
+
+        final results = await Future.wait(futures);
+        for (var result in results) {
+          apiRestaurants.addAll(result);
+        }
+
+        print('--- 총 ${apiRestaurants.length}개의 결과를 찾았습니다 ---');
 
         if (apiRestaurants.isNotEmpty) {
-          return apiRestaurants;
+          return _processApiResults(apiRestaurants, RecommendationRequest.now(userLocation: userLocation, numberOfPeople: 1, mealTime: 'any'));
         }
       } catch (e) {
         print('API 호출 실패, 샘플 데이터 사용: $e');
@@ -153,17 +162,31 @@ class RecommendationService {
 
     // API 호출 실패 시 또는 개발 모드일 때: 샘플 데이터 사용
     List<Restaurant> allRestaurants = _getAllRestaurants();
-    
-    // 카테고리로 필터링
     List<Restaurant> categoryRestaurants = allRestaurants
         .where((restaurant) => restaurant.category == category)
         .toList();
-
-    // 거리 기준으로 정렬
     categoryRestaurants = _sortByDistance(categoryRestaurants, userLocation);
-
     return categoryRestaurants.take(limit).toList();
   }
+
+  List<Restaurant> _processApiResults(List<Restaurant> restaurants, RecommendationRequest request) {
+    List<Restaurant> filteredRestaurants = _filterRestaurants(restaurants, request);
+    Map<String, Restaurant> uniqueRestaurants = {};
+    for (Restaurant restaurant in filteredRestaurants) {
+      uniqueRestaurants[restaurant.name] = restaurant; // 이름으로 중복 제거
+    }
+    List<Restaurant> finalResults = uniqueRestaurants.values.toList();
+    finalResults = _sortByDistance(finalResults, request.userLocation);
+    return finalResults.take(10).toList();
+  }
+
+  List<Restaurant> _getSampleData(RecommendationRequest request) {
+    List<Restaurant> allRestaurants = _getAllRestaurants();
+    List<Restaurant> filteredRestaurants = _filterRestaurants(allRestaurants, request);
+    filteredRestaurants = _sortByDistance(filteredRestaurants, request.userLocation);
+    return filteredRestaurants.take(10).toList();
+  }
+
 
   /// 인기 음식점 추천
   Future<List<Restaurant>> getPopularRestaurants({

@@ -3,12 +3,16 @@ import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'providers/providers.dart';
 import 'services/services.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // SharedPreferences 초기화
   await PreferencesService.init();
+
+  // Kakao Map SDK 초기화
+  AuthRepository.initialize(appKey: ConfigService().kakaoJsApiKey);
   
   runApp(const MenuRecommendationApp());
 }
@@ -95,6 +99,13 @@ class _AppInitializerState extends State<AppInitializer> {
 
     // 앱 설정 초기화
     ConfigService().setDevelopmentApiKey();
+
+    // API 키 유효성 검사
+    final kakaoApiService = KakaoApiService();
+    final isKakaoKeyValid = await kakaoApiService.isApiKeyValid();
+    print('========================================');
+    print('Kakao API Key 유효성: $isKakaoKeyValid');
+    print('========================================');
 
     // 테마 초기화
     await themeProvider.initializeTheme();

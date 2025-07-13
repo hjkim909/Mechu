@@ -1,17 +1,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/models.dart';
+import 'config_service.dart';
 
 /// 카카오 로컬 API 서비스
 class KakaoApiService {
   static const String _baseUrl = 'https://dapi.kakao.com/v2/local';
   
-  // TODO: 실제 앱 배포 시에는 환경변수로 관리해야 함
-  static const String _apiKey = 'YOUR_KAKAO_API_KEY_HERE';
-  
+  final ConfigService _configService = ConfigService();
+
   static final KakaoApiService _instance = KakaoApiService._internal();
   factory KakaoApiService() => _instance;
   KakaoApiService._internal();
+
+  String get _apiKey => _configService.kakaoApiKey;
 
   /// 카테고리별 음식점 검색
   /// 

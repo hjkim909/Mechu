@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import '../models/models.dart';
 
-class RecommendationResultScreen extends StatelessWidget {
+class RecommendationResultScreen extends StatefulWidget {
   final List<Restaurant> restaurants;
   final int numberOfPeople;
   final UserLocation userLocation;
@@ -16,6 +17,34 @@ class RecommendationResultScreen extends StatelessWidget {
   });
 
   @override
+  State<RecommendationResultScreen> createState() => _RecommendationResultScreenState();
+}
+
+class _RecommendationResultScreenState extends State<RecommendationResultScreen> {
+  late KakaoMapController _mapController;
+  final Set<Marker> _markers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _createMarkers();
+  }
+
+  void _createMarkers() {
+    for (final restaurant in widget.restaurants) {
+      if (restaurant.latitude != 0.0 && restaurant.longitude != 0.0) {
+        _markers.add(
+          Marker(
+            markerId: restaurant.id,
+            latLng: LatLng(restaurant.latitude, restaurant.longitude),
+            infoWindowContent: restaurant.name,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -23,9 +52,9 @@ class RecommendationResultScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          selectedCategory != null 
-              ? '$selectedCategory 맛집 ${restaurants.length}곳'
-              : '${numberOfPeople}명을 위한 추천',
+          widget.selectedCategory != null 
+              ? '${widget.selectedCategory} 맛집 ${widget.restaurants.length}곳'
+              : '${widget.numberOfPeople}명을 위한 추천',
           style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -33,9 +62,29 @@ class RecommendationResultScreen extends StatelessWidget {
         backgroundColor: colorScheme.surface,
         elevation: 0,
       ),
-      body: restaurants.isEmpty
+      body: widget.restaurants.isEmpty
           ? _buildEmptyState(context)
-          : _buildRecommendationList(context),
+          : Column(
+              children: [
+                _buildMapView(),
+                Expanded(
+                  child: _buildRecommendationList(context),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildMapView() {
+    return SizedBox(
+      height: 250,
+      child: KakaoMap(
+        onMapCreated: (controller) {
+          _mapController = controller;
+        },
+        markers: _markers.toList(),
+        center: LatLng(widget.userLocation.latitude, widget.userLocation.longitude),
+      ),
     );
   }
 
@@ -94,14 +143,14 @@ class RecommendationResultScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    userLocation.address ?? '현재 위치',
+                    widget.userLocation.address ?? '현재 위치',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const Spacer(),
                   Text(
-                    '${restaurants.length}개 음식점',
+                    '${widget.restaurants.length}개 음식점',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colorScheme.primary,
                       fontWeight: FontWeight.w600,
@@ -117,9 +166,9 @@ class RecommendationResultScreen extends StatelessWidget {
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: restaurants.length,
+            itemCount: widget.restaurants.length,
             itemBuilder: (context, index) {
-              final restaurant = restaurants[index];
+              final restaurant = widget.restaurants[index];
               return _buildRestaurantCard(context, restaurant, index + 1);
             },
           ),
@@ -141,7 +190,9 @@ class RecommendationResultScreen extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
-          // TODO: 음식점 상세 화면으로 이동
+          if (restaurant.latitude != 0.0 && restaurant.longitude != 0.0) {
+            _mapController.setCenter(LatLng(restaurant.latitude, restaurant.longitude));
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${restaurant.name} 상세 정보'),

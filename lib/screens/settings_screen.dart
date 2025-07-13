@@ -531,16 +531,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'system';
     }
   }
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('취소'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // 사용자 프로필 다이얼로그

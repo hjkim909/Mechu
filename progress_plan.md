@@ -85,6 +85,22 @@ Flutter를 사용한 메뉴 추천 앱 개발
   - [x] HomeScreen에 "현재 위치로 설정" 버튼 추가
   - [x] GPS 실시간 위치 추적 기능 구현
 
+- [x] 테마 변경 기능 구현
+  - [x] ThemeProvider 클래스 생성 (라이트/다크/시스템 모드)
+  - [x] main.dart에 테마 시스템 적용
+  - [x] Material Design 3 기반 라이트/다크 테마 정의
+  - [x] SettingsScreen에 테마 선택 다이얼로그 추가
+  - [x] 실시간 테마 변경 및 설정 저장 기능 완료
+
+- [x] 외부 API 연동 (음식점 데이터)
+  - [x] http 패키지 추가 (^1.1.0)
+  - [x] KakaoApiService 클래스 구현
+  - [x] ConfigService로 API 키 관리 시스템 구축
+  - [x] RecommendationService API 연동 완료
+  - [x] 폴백 시스템 구현 (API 실패 시 샘플 데이터 사용)
+  - [x] 카테고리별 실제 음식점 검색 기능
+  - [x] 키워드 기반 음식점 검색 기능
+
 ### 다음 단계
 - [x] Flutter 실행 권한 문제 해결 (Android Studio 사용)
 - [x] 앱 실행 테스트 및 기능 검증
@@ -93,9 +109,11 @@ Flutter를 사용한 메뉴 추천 앱 개발
 - [x] Provider 상태 관리 구현
 - [x] 사용자 설정 저장 기능 (SharedPreferences)
 - [x] 실제 위치 서비스 연동 (GPS)
-- [ ] 외부 API 연동 (음식점 데이터)
-- [ ] 테마 변경 기능 구현
+- [x] 테마 변경 기능 구현
+- [x] 외부 API 연동 (음식점 데이터)
+- [ ] 카카오 API 키 설정 및 실제 테스트
 - [ ] 코드 생성 실행 (build_runner) - 필요시
+- [ ] UI/UX 개선 및 최종 완성도 향상
 
 ## 로그
 - 2024년 - 프로젝트 초기 설정 및 홈 화면 완료
@@ -151,6 +169,19 @@ Flutter를 사용한 메뉴 추천 앱 개발
   - 좌표 기반 지역 추정 시스템 (서울 주요 지역)
   - HomeScreen에 "현재 위치로 설정" 버튼 추가
   - GPS 실시간 위치 추적 및 자동 주소 변환 기능
+- 2024년 12월 - 테마 변경 기능 구현 완료 🎉
+  - ThemeProvider 클래스 생성 (라이트/다크/시스템 모드)
+  - main.dart에 Material Design 3 테마 시스템 적용
+  - 실시간 테마 변경 및 SharedPreferences 저장
+  - SettingsScreen에 테마 선택 다이얼로그 추가
+  - 모든 화면에서 테마 적용 확인 완료
+- 2024년 12월 - 외부 API 연동 (음식점 데이터) 구현 완료 🎉
+  - http 패키지 추가 및 KakaoApiService 클래스 구현
+  - ConfigService로 API 키 관리 시스템 구축
+  - RecommendationService를 실제 API 호출로 업데이트
+  - 폴백 시스템 구현 (API 실패 시 샘플 데이터 자동 사용)
+  - 카테고리별/키워드 기반 실제 음식점 검색 기능 완성
+  - 개발 모드와 실제 API 모드 분리로 안전한 개발 환경 구축
 
 ## 참고 사항
 ### Flutter 실행 권한 문제 해결 방법 (macOS)
@@ -172,6 +203,28 @@ fvm use stable
 flutter pub get
 flutter packages pub run build_runner build
 ```
+
+### 카카오 API 연동 방법
+#### 1. API 키 발급
+1. [카카오 개발자 콘솔](https://developers.kakao.com/)에서 애플리케이션 생성
+2. 플랫폼 설정에서 Android/iOS 패키지명 추가
+3. 로컬 API 키 복사
+
+#### 2. API 키 설정
+```dart
+// lib/services/config_service.dart의 setDevelopmentApiKey() 메서드에서
+setKakaoApiKey('여기에_실제_API_키_입력');
+```
+
+#### 3. 실제 API 모드 활성화
+```dart
+// ConfigService에서 실제 API 사용 활성화
+ConfigService().enableRealApiMode();
+```
+
+#### 4. 현재 상태
+- 개발 모드: 샘플 데이터 사용 (API 키 없이 테스트 가능)
+- 실제 API 키 설정 시: 카카오 로컬 API를 통한 실제 음식점 데이터 사용
 
 ### 안드로이드 스튜디오 테스트 체크리스트
 #### 실행 전 확인사항

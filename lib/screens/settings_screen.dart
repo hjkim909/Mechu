@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../services/services.dart';
+import '../providers/providers.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,7 +18,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
   bool _notificationsEnabled = true;
   bool _locationPermissionEnabled = true;
-  String _selectedTheme = 'system'; // system, light, dark
 
   @override
   void initState() {
@@ -31,6 +32,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       final user = await _userService.getCurrentUser();
+      
+      // 저장된 설정 불러오기
+      _notificationsEnabled = PreferencesService.getNotificationsEnabled();
+      _locationPermissionEnabled = PreferencesService.getLocationPermissionEnabled();
+      
       setState(() {
         _currentUser = user;
       });
@@ -47,7 +53,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_currentUser == null) return;
 
     try {
-      // TODO: 사용자 설정 저장 로직 구현
+      // 알림 및 위치 권한 설정 저장
+      await PreferencesService.setNotificationsEnabled(_notificationsEnabled);
+      await PreferencesService.setLocationPermissionEnabled(_locationPermissionEnabled);
+      
       _showSuccessSnackBar('설정이 저장되었습니다');
     } catch (e) {
       _showErrorSnackBar('설정 저장 중 오류가 발생했습니다');
@@ -336,11 +345,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const Divider(height: 1),
-          _buildSettingTile(
-            '테마 설정',
-            _getThemeDisplayName(_selectedTheme),
-            Icons.palette,
-            onTap: _showThemeDialog,
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return _buildSettingTile(
+                '테마 설정',
+                themeProvider.currentThemeText,
+                themeProvider.currentThemeIcon,
+                onTap: _showThemeDialog,
+              );
+            },
           ),
         ],
       ),
@@ -455,63 +468,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  String _getThemeDisplayName(String theme) {
-    switch (theme) {
-      case 'light':
-        return '라이트 모드';
-      case 'dark':
-        return '다크 모드';
-      case 'system':
-      default:
-        return '시스템 설정';
-    }
-  }
-
   void _showThemeDialog() {
+    final themeProvider = context.read<ThemeProvider>();
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('테마 설정'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<String>(
-              title: const Text('시스템 설정'),
-              value: 'system',
-              groupValue: _selectedTheme,
-              onChanged: (value) {
-                setState(() {
-                  _selectedTheme = value!;
-                });
-                Navigator.of(context).pop();
-                _updateUserPreferences();
-              },
+      builder: (context) => Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          String currentThemeString = _getThemeStringFromMode(themeProvider.themeMode);
+          
+          return AlertDialog(
+            title: const Text('테마 설정'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<String>(
+                  title: const Text('시스템 설정'),
+                  subtitle: const Text('기기 설정에 따라 자동으로 변경'),
+                  value: 'system',
+                  groupValue: currentThemeString,
+                  onChanged: (value) async {
+                    await themeProvider.setSystemMode();
+                    if (mounted) Navigator.of(context).pop();
+                  },
+                ),
+                RadioListTile<String>(
+                  title: const Text('라이트 모드'),
+                  subtitle: const Text('밝은 테마'),
+                  value: 'light',
+                  groupValue: currentThemeString,
+                  onChanged: (value) async {
+                    await themeProvider.setLightMode();
+                    if (mounted) Navigator.of(context).pop();
+                  },
+                ),
+                RadioListTile<String>(
+                  title: const Text('다크 모드'),
+                  subtitle: const Text('어두운 테마'),
+                  value: 'dark',
+                  groupValue: currentThemeString,
+                  onChanged: (value) async {
+                    await themeProvider.setDarkMode();
+                    if (mounted) Navigator.of(context).pop();
+                  },
+                ),
+              ],
             ),
-            RadioListTile<String>(
-              title: const Text('라이트 모드'),
-              value: 'light',
-              groupValue: _selectedTheme,
-              onChanged: (value) {
-                setState(() {
-                  _selectedTheme = value!;
-                });
-                Navigator.of(context).pop();
-                _updateUserPreferences();
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('다크 모드'),
-              value: 'dark',
-              groupValue: _selectedTheme,
-              onChanged: (value) {
-                setState(() {
-                  _selectedTheme = value!;
-                });
-                Navigator.of(context).pop();
-                _updateUserPreferences();
-              },
-            ),
-          ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// ThemeMode를 문자열로 변환
+  String _getThemeStringFromMode(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'light';
+      case ThemeMode.dark:
+        return 'dark';
+      case ThemeMode.system:
+        return 'system';
+    }
+  }
         ),
         actions: [
           TextButton(

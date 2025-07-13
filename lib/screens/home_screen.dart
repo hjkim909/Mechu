@@ -22,7 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadSavedSettings();
-    _initializeProviders();
   }
 
   /// 저장된 설정 불러오기
@@ -31,16 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _peopleCount = savedNumberOfPeople.toDouble();
     });
-  }
-
-  Future<void> _initializeProviders() async {
-    final userProvider = context.read<UserProvider>();
-    final locationProvider = context.read<LocationProvider>();
-    
-    // 사용자 및 위치 정보 초기화
-    await userProvider.initializeUser();
-    await locationProvider.initializeLocation();
-    await locationProvider.loadFavoriteLocations();
   }
 
   Future<void> _navigateToLocationSetting() async {

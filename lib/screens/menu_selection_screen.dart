@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../services/services.dart';
+import '../utils/page_transitions.dart';
 import 'recommendation_result_screen.dart';
 
 class MenuSelectionScreen extends StatefulWidget {
@@ -198,52 +199,7 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
              ),
            ),
 
-          // 하단 선택 완료 버튼
-          if (_selectedCategory != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              child: Consumer<RecommendationProvider>(
-                builder: (context, recommendationProvider, child) {
-                  return ElevatedButton(
-                    onPressed: recommendationProvider.isLoading 
-                        ? null 
-                        : () => _getRecommendationsByCategory(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
-                      foregroundColor: colorScheme.onPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: recommendationProvider.isLoading
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: colorScheme.onPrimary,
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              const Text('음식점 찾는 중...'),
-                            ],
-                          )
-                        : Text(
-                            '$_selectedCategory 음식점 찾기',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  );
-                },
-              ),
-            ),
+
         ],
       ),
     );
@@ -263,12 +219,14 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
+        onTap: () async {
           setState(() {
-            _selectedCategory = _selectedCategory == category.name ? null : category.name;
+            _selectedCategory = category.name;
           });
+          // 카테고리 선택 시 바로 추천 결과로 이동
+          await _getRecommendationsByCategory(category.name);
         },
-        child: Container(
+      child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
@@ -375,8 +333,7 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
     );
   }
 
-  Future<void> _getRecommendationsByCategory() async {
-    if (_selectedCategory == null) return;
+  Future<void> _getRecommendationsByCategory(String categoryName) async {
 
     final recommendationProvider = context.read<RecommendationProvider>();
     final locationProvider = context.read<LocationProvider>();
@@ -384,7 +341,7 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
     try {
       await recommendationProvider.getRecommendationsByCategory(
         location: locationProvider.currentLocation,
-        category: _selectedCategory!,
+        category: categoryName,
       );
 
       if (mounted && recommendationProvider.hasRecommendations) {
@@ -394,19 +351,20 @@ class _MenuSelectionScreenState extends State<MenuSelectionScreen> {
             ?? const UserLocation(latitude: 37.4979517, longitude: 127.0276188, address: '강남역');
         
         Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => RecommendationResultScreen(
+          PageTransitions.heroCard(
+            RecommendationResultScreen(
               restaurants: recommendationProvider.recommendations,
               numberOfPeople: widget.numberOfPeople,
               userLocation: userLocation,
-              selectedCategory: _selectedCategory,
+              selectedCategory: categoryName,
             ),
+            heroTag: 'menuToResult',
           ),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$_selectedCategory 음식점을 찾을 수 없습니다'),
+            content: Text('$categoryName 음식점을 찾을 수 없습니다'),
             behavior: SnackBarBehavior.floating,
           ),
         );

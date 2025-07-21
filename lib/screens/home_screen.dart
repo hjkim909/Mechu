@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../services/services.dart';
+import '../utils/page_transitions.dart';
 import 'recommendation_result_screen.dart';
 import 'location_setting_screen.dart';
 import 'settings_screen.dart';
@@ -34,8 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _navigateToLocationSetting() async {
     await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const LocationSettingScreen(),
+      PageTransitions.slideFromBottom(
+        const LocationSettingScreen(),
       ),
     );
     // LocationProvider에서 상태가 자동으로 업데이트됨
@@ -75,10 +76,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _getRecommendations() async {
-    // 메뉴 선택 화면으로 이동
+    // 메뉴 선택 화면으로 부드러운 애니메이션과 함께 이동
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => MenuSelectionScreen(
+      PageTransitions.slideFromRight(
+        MenuSelectionScreen(
           numberOfPeople: _peopleCount.round(),
         ),
       ),
@@ -107,8 +108,8 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
+                PageTransitions.fadeWithScale(
+                  const SettingsScreen(),
                 ),
               );
             },
@@ -116,12 +117,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - 
+                         MediaQuery.of(context).padding.top - 
+                         MediaQuery.of(context).padding.bottom - 
+                         kToolbarHeight,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(18.0),
+              child: Column(
+                children: [
               // 상단 여백
-              const SizedBox(height: 32),
+              const SizedBox(height: 12),
 
               // 현재 위치 표시 (터치 가능)
               Consumer<LocationProvider>(
@@ -231,8 +241,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
 
-              // 중간 여백 (확장)
-              const Expanded(child: SizedBox()),
+              // 중간 여백
+              const SizedBox(height: 20),
 
               // 인원수 텍스트
               Text(
@@ -243,46 +253,48 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 20),
 
               // 추천 버튼
               Consumer<RecommendationProvider>(
                 builder: (context, recommendationProvider, child) {
-                  return Container(
-                    width: double.infinity,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          colorScheme.primary,
-                          colorScheme.primary.withOpacity(0.8),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colorScheme.primary.withOpacity(0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
+                  return AnimatedButton(
+                    onTap: recommendationProvider.isLoading ? null : _getRecommendations,
+                    scaleValue: 0.98,
+                    child: PulseAnimation(
+                      duration: const Duration(seconds: 2),
+                      minScale: 1.0,
+                      maxScale: recommendationProvider.isLoading ? 1.0 : 1.02,
+                                              child: Container(
+                          width: double.infinity,
+                          height: 100,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              colorScheme.primary,
+                              colorScheme.primary.withOpacity(0.8),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(32),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colorScheme.primary.withOpacity(0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(32),
-                        onTap: recommendationProvider.isLoading ? null : _getRecommendations,
                         child: Container(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(16),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               recommendationProvider.isLoading
                                   ? SizedBox(
-                                      width: 48,
-                                      height: 48,
+                                      width: 36,
+                                      height: 36,
                                       child: CircularProgressIndicator(
                                         color: colorScheme.onPrimary,
                                         strokeWidth: 3,
@@ -290,10 +302,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     )
                                   : Icon(
                                       Icons.restaurant_menu,
-                                      size: 48,
+                                      size: 36,
                                       color: colorScheme.onPrimary,
                                     ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 8),
                               Text(
                                 recommendationProvider.isLoading ? '추천 중...' : '지금 추천받기!',
                                 style: theme.textTheme.headlineSmall?.copyWith(
@@ -310,11 +322,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
 
-              const SizedBox(height: 48),
+              const SizedBox(height: 20),
 
               // 인원수 슬라이더
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceVariant.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(20),
@@ -328,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         activeTrackColor: colorScheme.primary,
@@ -356,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -378,9 +390,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // 하단 여백
-              const SizedBox(height: 32),
-            ],
+                // 하단 여백
+                const SizedBox(height: 8),
+              ],
+              ),
+            ),
           ),
         ),
       ),

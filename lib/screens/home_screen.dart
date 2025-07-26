@@ -8,7 +8,7 @@ import '../utils/page_transitions.dart';
 import 'recommendation_result_screen.dart';
 import 'location_setting_screen.dart';
 import 'settings_screen.dart';
-import 'menu_selection_screen.dart';
+import 'swipe_recommendation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -159,10 +159,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // 햅틱 피드백
     HapticFeedback.selectionClick();
     
-    // 메뉴 선택 화면으로 부드러운 애니메이션과 함께 이동
+    // 스와이프 추천 화면으로 부드러운 애니메이션과 함께 이동
     Navigator.of(context).push(
       PageTransitions.slideFromRight(
-        MenuSelectionScreen(
+        SwipeRecommendationScreen(
           numberOfPeople: _peopleCount.round(),
         ),
       ),

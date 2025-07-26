@@ -240,6 +240,15 @@ Flutter를 사용한 메뉴 추천 앱 개발
   - 개선된 로딩 위젯: EnhancedLoadingIndicator, 회전+맥박 애니메이션
   - 빈 상태/에러 상태 위젯: EmptyStateWidget, ErrorStateWidget
   - 코드 최적화: 중복 제거, 성능 향상, 일관성 개선
+- 2025년 1월 16일 - 스와이프 방식 메뉴 추천 시스템 구현 완료 🎉
+  - SwipeRecommendationScreen: 카드 스와이프 UI로 메뉴 추천
+  - 확률 가중치 시스템: 김치찌개(20%), 삼겹살(15%), 치킨(15%) 등
+  - PageView 기반 부드러운 스와이프 애니메이션
+  - 진행 표시기: LinearProgressIndicator로 현재 위치 표시
+  - 추천 배지: 첫 번째 메뉴에 "오늘의 추천!" 강조
+  - 햅틱 피드백: 페이지 변경, 메뉴 선택 시 적절한 진동
+  - 새로운 추천 생성: refresh 버튼으로 새로운 확률 기반 추천
+  - MenuSelectionScreen 대체: 더 직관적인 추천 방식
 
 ## 참고 사항
 ### Flutter 실행 권한 문제 해결 방법 (macOS)

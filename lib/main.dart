@@ -28,6 +28,7 @@ class MenuRecommendationApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(create: (_) => RecommendationProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => FavoriteProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -114,6 +115,10 @@ class _AppInitializerState extends State<AppInitializer> {
     await userProvider.initializeUser();
     await locationProvider.initializeLocation();
     await locationProvider.loadFavoriteLocations();
+    
+    // 즐겨찾기 초기화
+    final favoriteProvider = context.read<FavoriteProvider>();
+    await favoriteProvider.initializeFavorites();
   }
 
   @override

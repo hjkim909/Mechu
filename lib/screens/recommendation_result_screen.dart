@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import '../models/models.dart';
+import '../providers/providers.dart';
 
 class RecommendationResultScreen extends StatefulWidget {
   final List<Restaurant> restaurants;
@@ -42,6 +45,8 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
         );
       }
     }
+  }
+}
   }
 
   @override
@@ -278,6 +283,27 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
                       ],
                     ),
                   ),
+
+                  // 즐겨찾기 버튼
+                  Consumer<FavoriteProvider>(
+                    builder: (context, favoriteProvider, child) {
+                      final isFavorite = favoriteProvider.isFavorite(restaurant.id);
+                      
+                      return IconButton(
+                        onPressed: () => _toggleFavorite(restaurant, favoriteProvider),
+                        icon: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            key: ValueKey(isFavorite),
+                            color: isFavorite ? Colors.red.shade600 : colorScheme.onSurfaceVariant,
+                            size: 24,
+                          ),
+                        ),
+                        tooltip: isFavorite ? '즐겨찾기 제거' : '즐겨찾기 추가',
+                      );
+                    },
+                  ),
                   
                   // 영업 상태
                   Container(
@@ -336,5 +362,70 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
         ),
       ),
     );
+  }
+
+  /// 즐겨찾기 토글
+  Future<void> _toggleFavorite(Restaurant restaurant, FavoriteProvider favoriteProvider) async {
+    // 햅틱 피드백
+    HapticFeedback.lightImpact();
+    
+    try {
+      final success = await favoriteProvider.toggleFavorite(restaurant);
+      
+      if (mounted && success) {
+        final isFavorite = favoriteProvider.isFavorite(restaurant.id);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    isFavorite 
+                        ? '${restaurant.name}을(를) 즐겨찾기에 추가했습니다'
+                        : '${restaurant.name}을(를) 즐겨찾기에서 제거했습니다',
+                  ),
+                ),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: isFavorite ? Colors.red.shade600 : Colors.grey.shade600,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text('즐겨찾기 변경에 실패했습니다'),
+                ),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red.shade600,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    }
   }
 } 

@@ -183,6 +183,7 @@ class _SwipeRecommendationScreenState extends State<SwipeRecommendationScreen>
     try {
       final recommendationProvider = context.read<RecommendationProvider>();
       final locationProvider = context.read<LocationProvider>();
+      final historyProvider = context.read<RecommendationHistoryProvider>();
 
       await recommendationProvider.getRecommendationsByCategory(
         location: locationProvider.currentLocation,
@@ -190,6 +191,20 @@ class _SwipeRecommendationScreenState extends State<SwipeRecommendationScreen>
       );
 
       if (mounted && recommendationProvider.hasRecommendations) {
+        // 추천 이력 자동 저장
+        final history = historyProvider.createHistoryFromRecommendation(
+          location: locationProvider.currentLocation,
+          selectedCategory: menu.name,
+          numberOfPeople: widget.numberOfPeople,
+          restaurants: recommendationProvider.recommendations,
+          source: RecommendationSource.swipe,
+        );
+        
+        // 이력 저장 (비동기로 실행, 실패해도 추천 결과는 보여줌)
+        historyProvider.addHistory(history).catchError((error) {
+          print('추천 이력 저장 실패: $error');
+        });
+
         // 현재 위치를 UserLocation으로 변환
         final locationService = LocationService();
         final userLocation = await locationService.getLocationFromAddress(locationProvider.currentLocation) 

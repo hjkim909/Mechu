@@ -7,6 +7,7 @@ import '../services/services.dart';
 import '../utils/page_transitions.dart';
 import 'recommendation_result_screen.dart';
 import 'location_setting_screen.dart';
+import 'recommendation_history_screen.dart';
 import 'settings_screen.dart';
 import 'swipe_recommendation_screen.dart';
 
@@ -576,6 +577,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           },
                         ),
 
+                        const SizedBox(height: 16),
+
+                        // 추천 이력 및 즐겨찾기 버튼
+                        _buildQuickActionButtons(),
+
                         // 하단 여백
                         const SizedBox(height: 16),
                       ],
@@ -586,6 +592,159 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             );
           },
         ),
+      ),
+    );
+  }
+
+  /// 빠른 액션 버튼들 (추천 이력, 즐겨찾기)
+  Widget _buildQuickActionButtons() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      children: [
+        // 추천 이력 버튼
+        Expanded(
+          child: Consumer<RecommendationHistoryProvider>(
+            builder: (context, historyProvider, child) {
+              return AnimatedButton(
+                onTap: () => _navigateToHistory(),
+                scaleValue: 0.96,
+                child: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: colorScheme.outline.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.history,
+                        color: colorScheme.onSurfaceVariant,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '추천 이력',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          if (historyProvider.hasHistories)
+                            Text(
+                              '${historyProvider.historyCount}개',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        // 즐겨찾기 버튼
+        Expanded(
+          child: Consumer<FavoriteProvider>(
+            builder: (context, favoriteProvider, child) {
+              return AnimatedButton(
+                onTap: () => _navigateToFavorites(),
+                scaleValue: 0.96,
+                child: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: colorScheme.outline.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.favorite,
+                        color: Colors.red.shade600,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '즐겨찾기',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          if (favoriteProvider.hasFavorites)
+                            Text(
+                              '${favoriteProvider.favoriteCount}개',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 추천 이력 화면으로 이동
+  void _navigateToHistory() {
+    HapticFeedback.lightImpact();
+    Navigator.of(context).push(
+      PageTransitions.slideFromRight(
+        const RecommendationHistoryScreen(),
+      ),
+    );
+  }
+
+  /// 즐겨찾기 화면으로 이동 (미구현)
+  void _navigateToFavorites() {
+    HapticFeedback.lightImpact();
+    // TODO: 즐겨찾기 화면 구현 후 연결
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Colors.white),
+            const SizedBox(width: 8),
+            const Text('즐겨찾기 화면을 준비 중입니다'),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.blue.shade600,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }

@@ -46,8 +46,6 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
       }
     }
   }
-}
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,37 +107,7 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.restaurant_menu,
-            size: 64,
-            color: colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '추천할 음식점이 없습니다',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '다른 조건으로 다시 검색해보세요',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildRecommendationList(BuildContext context) {
     final theme = Theme.of(context);
@@ -428,4 +396,55 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
       }
     }
   }
-} 
+
+  /// 빈 상태 위젯
+  Widget _buildEmptyState(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.restaurant_menu,
+              size: 80,
+              color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              '추천 결과가 없습니다',
+              style: theme.textTheme.headlineMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '다른 조건으로 다시 시도해보세요',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.refresh),
+              label: const Text('다시 시도'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

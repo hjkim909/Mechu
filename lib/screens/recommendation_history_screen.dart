@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../utils/page_transitions.dart';
-import '../widgets/common_widgets.dart';
+import '../widgets/animated_grid_view.dart';
 
 class RecommendationHistoryScreen extends StatefulWidget {
   const RecommendationHistoryScreen({super.key});
@@ -168,7 +168,7 @@ class _RecommendationHistoryScreenState extends State<RecommendationHistoryScree
                 subtitle: '메뉴를 추천받으면 이곳에 이력이 표시됩니다',
                 icon: Icons.history,
                 actionText: '메뉴 추천받기',
-                onAction: () => Navigator.of(context).pop(),
+                onActionPressed: () => Navigator.of(context).pop(),
               );
             }
 

@@ -23,8 +23,6 @@ class SwipeRecommendationScreen extends StatefulWidget {
 class _SwipeRecommendationScreenState extends State<SwipeRecommendationScreen>
     with TickerProviderStateMixin {
   late PageController _pageController;
-  late AnimationController _cardAnimationController;
-  late Animation<double> _cardScaleAnimation;
   
   int _currentIndex = 0;
   bool _isLoading = false;
@@ -107,29 +105,13 @@ class _SwipeRecommendationScreenState extends State<SwipeRecommendationScreen>
   void initState() {
     super.initState();
     _pageController = PageController();
-    _initializeAnimations();
     _generateRecommendedMenus();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _cardAnimationController.dispose();
     super.dispose();
-  }
-
-  void _initializeAnimations() {
-    _cardAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _cardScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _cardAnimationController,
-      curve: Curves.easeInOut,
-    ));
   }
 
   /// 확률 기반 메뉴 추천 생성
@@ -371,7 +353,7 @@ class _SwipeRecommendationScreenState extends State<SwipeRecommendationScreen>
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '좌우로 밀어서 다른 메뉴 보기',
+                        '좌우로 밀거나 카드를 눌러서 선택하세요',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -503,127 +485,131 @@ class _SwipeRecommendationScreenState extends State<SwipeRecommendationScreen>
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(32),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(32),
-            gradient: LinearGradient(
-              colors: [
-                menu.color.withOpacity(0.1),
-                menu.color.withOpacity(0.05),
-                Colors.white,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        child: InkWell(
+          onTap: _isLoading ? null : () => _selectMenu(menu),
+          borderRadius: BorderRadius.circular(32),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32),
+              gradient: LinearGradient(
+                colors: [
+                  menu.color.withOpacity(0.1),
+                  menu.color.withOpacity(0.05),
+                  Colors.white,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // 추천 배지
-                if (isRecommended) ...[
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 추천 배지
+                  if (isRecommended) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade600,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '오늘의 추천!',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+
+                  // 메뉴 아이콘
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
-                      color: Colors.red.shade600,
-                      borderRadius: BorderRadius.circular(20),
+                      shape: BoxShape.circle,
+                      color: menu.color.withOpacity(0.2),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.red.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          color: menu.color.withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.star,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '오늘의 추천!',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    child: Center(
+                      child: Text(
+                        menu.icon,
+                        style: const TextStyle(fontSize: 64),
+                      ),
                     ),
                   ),
+
                   const SizedBox(height: 32),
-                ],
 
-                // 메뉴 아이콘
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: menu.color.withOpacity(0.2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: menu.color.withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
+                  // 메뉴 이름
+                  Text(
+                    menu.name,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: menu.color,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 메뉴 설명
+                  Text(
+                    menu.description,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // 확률 표시 (첫 번째 메뉴만)
+                  if (isRecommended) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      menu.icon,
-                      style: const TextStyle(fontSize: 64),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // 메뉴 이름
-                Text(
-                  menu.name,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: menu.color,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 12),
-
-                // 메뉴 설명
-                Text(
-                  menu.description,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 32),
-
-                // 확률 표시 (첫 번째 메뉴만)
-                if (isRecommended) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${(_menuWeights[menu]! * 100).round()}% 확률로 추천됨',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
+                      child: Text(
+                        '${(_menuWeights[menu]! * 100).round()}% 확률로 추천됨',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

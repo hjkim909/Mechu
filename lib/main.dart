@@ -124,6 +124,10 @@ class _AppInitializerState extends State<AppInitializer> {
     // 추천 이력 초기화
     final historyProvider = context.read<RecommendationHistoryProvider>();
     await historyProvider.initializeHistory();
+    
+    // 즐겨찾기 초기화
+    final favoriteProvider = context.read<FavoriteProvider>();
+    await favoriteProvider.initializeFavorites();
   }
 
   @override

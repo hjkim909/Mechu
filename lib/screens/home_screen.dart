@@ -14,7 +14,12 @@ import 'swipe_recommendation_screen.dart';
 import 'kakao_api_test_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool showAppBar;
+  
+  const HomeScreen({
+    super.key,
+    this.showAppBar = true,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -190,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: widget.showAppBar ? AppBar(
         title: Text(
           '메뉴 추천',
           style: theme.textTheme.headlineMedium?.copyWith(
@@ -226,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             },
           ),
         ],
-      ),
+      ) : null,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

@@ -9,7 +9,12 @@ import '../utils/error_handler.dart';
 import 'kakao_api_test_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final bool showAppBar;
+  
+  const SettingsScreen({
+    super.key,
+    this.showAppBar = true,
+  });
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();

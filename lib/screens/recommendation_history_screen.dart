@@ -7,7 +7,12 @@ import '../utils/page_transitions.dart';
 import '../widgets/animated_grid_view.dart';
 
 class RecommendationHistoryScreen extends StatefulWidget {
-  const RecommendationHistoryScreen({super.key});
+  final bool showAppBar;
+  
+  const RecommendationHistoryScreen({
+    super.key,
+    this.showAppBar = true,
+  });
 
   @override
   State<RecommendationHistoryScreen> createState() => _RecommendationHistoryScreenState();
@@ -62,7 +67,7 @@ class _RecommendationHistoryScreenState extends State<RecommendationHistoryScree
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
+      appBar: widget.showAppBar ? AppBar(
         title: Consumer<RecommendationHistoryProvider>(
           builder: (context, historyProvider, child) {
             return Column(
@@ -145,7 +150,7 @@ class _RecommendationHistoryScreenState extends State<RecommendationHistoryScree
             ],
           ),
         ],
-      ),
+      ) : null,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: Consumer<RecommendationHistoryProvider>(

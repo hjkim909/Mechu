@@ -15,6 +15,7 @@ class KakaoApiTestScreen extends StatefulWidget {
 class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
   final KakaoApiService _kakaoApiService = KakaoApiService();
   final ConfigService _configService = ConfigService();
+  final LocationService _locationService = LocationService();
   final TextEditingController _keywordController = TextEditingController();
   
   List<Restaurant> _testResults = [];
@@ -23,6 +24,7 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
   String _addressResult = '';
   bool _isApiKeyValid = false;
   Map<String, dynamic> _configStatus = {};
+  UserLocation? _currentLocation;
 
   @override
   void initState() {
@@ -39,6 +41,9 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
     try {
       // ConfigService 상태 확인
       _configStatus = _configService.getConfigStatus();
+      
+      // 현재 위치 가져오기
+      _currentLocation = await _locationService.getCurrentLocation();
       
       // API 키 유효성 검사
       _isApiKeyValid = await _kakaoApiService.isApiKeyValid();
@@ -58,11 +63,11 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
   }
 
   Future<void> _testCategorySearch() async {
-    final locationProvider = context.read<LocationProvider>();
-    if (!locationProvider.hasLocation) {
+    if (_currentLocation == null) {
       setState(() {
-        _statusMessage = '위치 정보가 필요합니다.';
+        _statusMessage = '위치 정보가 필요합니다. 위치를 가져오는 중...';
       });
+      await _initializeTests();
       return;
     }
 
@@ -75,8 +80,8 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
     try {
       final restaurants = await _kakaoApiService.searchRestaurantsByCategory(
         category: '김치찌개',
-        latitude: locationProvider.currentLatitude!,
-        longitude: locationProvider.currentLongitude!,
+        latitude: _currentLocation!.latitude,
+        longitude: _currentLocation!.longitude,
         radius: 2000,
         size: 5,
       );
@@ -104,11 +109,11 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
       return;
     }
 
-    final locationProvider = context.read<LocationProvider>();
-    if (!locationProvider.hasLocation) {
+    if (_currentLocation == null) {
       setState(() {
-        _statusMessage = '위치 정보가 필요합니다.';
+        _statusMessage = '위치 정보가 필요합니다. 위치를 가져오는 중...';
       });
+      await _initializeTests();
       return;
     }
 
@@ -121,8 +126,8 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
     try {
       final restaurants = await _kakaoApiService.searchRestaurantsByKeyword(
         keyword: _keywordController.text.trim(),
-        latitude: locationProvider.currentLatitude!,
-        longitude: locationProvider.currentLongitude!,
+        latitude: _currentLocation!.latitude,
+        longitude: _currentLocation!.longitude,
         radius: 3000,
         size: 5,
       );
@@ -143,11 +148,11 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
   }
 
   Future<void> _testReverseGeocoding() async {
-    final locationProvider = context.read<LocationProvider>();
-    if (!locationProvider.hasLocation) {
+    if (_currentLocation == null) {
       setState(() {
-        _statusMessage = '위치 정보가 필요합니다.';
+        _statusMessage = '위치 정보가 필요합니다. 위치를 가져오는 중...';
       });
+      await _initializeTests();
       return;
     }
 
@@ -158,8 +163,8 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
 
     try {
       final address = await _kakaoApiService.getAddressFromCoordinates(
-        latitude: locationProvider.currentLatitude!,
-        longitude: locationProvider.currentLongitude!,
+        latitude: _currentLocation!.latitude,
+        longitude: _currentLocation!.longitude,
       );
 
       setState(() {
@@ -179,7 +184,6 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final locationProvider = context.watch<LocationProvider>();
     
     return Scaffold(
       appBar: AppBar(
@@ -209,11 +213,11 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
                     Text('기본 키 사용: ${_configStatus['isDefaultKey'] ?? true ? "❌ 기본 키" : "✅ 실제 키"}'),
                     const SizedBox(height: 8),
                     Text(
-                      '현재 위치: ${locationProvider.hasLocation 
-                        ? "${locationProvider.currentAddress}" 
+                      '현재 위치: ${_currentLocation != null 
+                        ? "${_currentLocation!.address} (${_currentLocation!.latitude.toStringAsFixed(4)}, ${_currentLocation!.longitude.toStringAsFixed(4)})" 
                         : "위치 정보 없음"}',
                       style: TextStyle(
-                        color: locationProvider.hasLocation 
+                        color: _currentLocation != null 
                           ? Colors.green 
                           : Colors.red,
                       ),

@@ -30,6 +30,7 @@ class MenuRecommendationApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
         ChangeNotifierProvider(create: (_) => RecommendationHistoryProvider()),
+        ChangeNotifierProvider(create: (_) => NetworkStatusProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

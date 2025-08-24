@@ -8,4 +8,6 @@ export 'naver_api_service.dart';
 export 'preferences_service.dart';
 export 'recommendation_history_service.dart';
 export 'recommendation_service.dart';
-export 'user_service.dart'; 
+export 'user_service.dart';
+export 'network_service.dart';
+export 'offline_cache_service.dart'; 

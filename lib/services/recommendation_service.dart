@@ -4,6 +4,8 @@ import 'location_service.dart';
 import 'kakao_api_service.dart';
 import 'naver_api_service.dart'; // 네이버 서비스 추가
 import 'config_service.dart';
+import 'network_service.dart';
+import 'offline_cache_service.dart';
 
 /// 메뉴 추천 서비스
 class RecommendationService {
@@ -15,9 +17,17 @@ class RecommendationService {
   final KakaoApiService _kakaoApiService = KakaoApiService();
   final NaverApiService _naverApiService = NaverApiService(); // 네이버 서비스 추가
   final ConfigService _configService = ConfigService();
+  final NetworkService _networkService = NetworkService();
+  final OfflineCacheService _cacheService = OfflineCacheService();
 
-  /// 메뉴 추천 요청을 처리하여 음식점 목록 반환 (실제 API 사용)
+  /// 메뉴 추천 요청을 처리하여 음식점 목록 반환 (오프라인 모드 대응)
   Future<List<Restaurant>> getRecommendations(RecommendationRequest request) async {
+    // 네트워크 상태 확인
+    if (!_networkService.isOnline) {
+      print('📱 오프라인 모드: 캐시된 데이터 또는 샘플 데이터 사용');
+      return await _getOfflineRecommendations(request);
+    }
+
     if (_configService.useRealApi) {
       try {
         List<Restaurant> apiRestaurants = [];

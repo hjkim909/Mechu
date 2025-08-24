@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/services.dart';
+import '../utils/error_handler.dart';
 
 /// 사용자 정보 및 설정 상태 관리
 class UserProvider with ChangeNotifier {
@@ -27,7 +28,8 @@ class UserProvider with ChangeNotifier {
       
       _clearError();
     } catch (e) {
-      _setError('사용자 정보를 불러올 수 없습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     } finally {
       _setLoading(false);
     }
@@ -77,7 +79,8 @@ class UserProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('이름 업데이트에 실패했습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     } finally {
       _setLoading(false);
     }
@@ -93,7 +96,8 @@ class UserProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('설정 업데이트에 실패했습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     } finally {
       _setLoading(false);
     }
@@ -119,7 +123,8 @@ class UserProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('카테고리 설정에 실패했습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     }
   }
 
@@ -139,7 +144,8 @@ class UserProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('카테고리 설정에 실패했습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     }
   }
 
@@ -152,7 +158,8 @@ class UserProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('가격대 설정에 실패했습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     }
   }
 
@@ -165,7 +172,8 @@ class UserProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('평점 설정에 실패했습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     }
   }
 
@@ -182,7 +190,8 @@ class UserProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('알레르기 정보 설정에 실패했습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     }
   }
 
@@ -195,7 +204,8 @@ class UserProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('채식 설정에 실패했습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     }
   }
 

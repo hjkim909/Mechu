@@ -5,6 +5,7 @@ import '../models/models.dart';
 import '../services/services.dart';
 import '../providers/providers.dart';
 import '../utils/page_transitions.dart';
+import '../utils/error_handler.dart';
 import 'kakao_api_test_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _currentUser = user;
       });
     } catch (e) {
-      _showErrorSnackBar('사용자 정보를 불러올 수 없습니다');
+      _showError(e, onRetry: _loadUserData);
     } finally {
       setState(() {
         _isLoading = false;
@@ -109,13 +110,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
+  void _showError(dynamic error, {VoidCallback? onRetry}) {
+    AppErrorHandler.showError(
+      context,
+      error,
+      onRetry: onRetry,
     );
   }
 

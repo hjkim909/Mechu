@@ -4,6 +4,8 @@ import '../services/services.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../widgets/performance_monitor_widget.dart';
+import '../widgets/error_boundary_widget.dart';
+import '../utils/error_handler.dart';
 
 /// 카카오 API 테스트 전용 화면
 class KakaoApiTestScreen extends StatefulWidget {
@@ -54,8 +56,9 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
         _statusMessage = _isApiKeyValid ? 'API 키가 유효합니다!' : 'API 키가 유효하지 않습니다.';
       });
     } catch (e) {
+      final appError = AppErrorHandler.analyzeError(e);
       setState(() {
-        _statusMessage = 'API 상태 확인 실패: $e';
+        _statusMessage = 'API 상태 확인 실패: ${appError.userMessage}';
       });
     } finally {
       setState(() {
@@ -93,9 +96,13 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
         _statusMessage = '카테고리 검색 성공! ${restaurants.length}개 결과';
       });
     } catch (e) {
+      final appError = AppErrorHandler.analyzeError(e);
       setState(() {
-        _statusMessage = '카테고리 검색 실패: $e';
+        _statusMessage = '카테고리 검색 실패: ${appError.userMessage}';
       });
+      
+      // 상세 에러 로깅
+      AppErrorHandler.showError(context, e, onRetry: _testCategorySearch);
     } finally {
       setState(() {
         _isLoading = false;
@@ -139,9 +146,12 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
         _statusMessage = '키워드 검색 성공! ${restaurants.length}개 결과';
       });
     } catch (e) {
+      final appError = AppErrorHandler.analyzeError(e);
       setState(() {
-        _statusMessage = '키워드 검색 실패: $e';
+        _statusMessage = '키워드 검색 실패: ${appError.userMessage}';
       });
+      
+      AppErrorHandler.showError(context, e, onRetry: _testKeywordSearch);
     } finally {
       setState(() {
         _isLoading = false;
@@ -174,9 +184,12 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
         _statusMessage = '주소 변환 성공!';
       });
     } catch (e) {
+      final appError = AppErrorHandler.analyzeError(e);
       setState(() {
-        _statusMessage = '주소 변환 실패: $e';
+        _statusMessage = '주소 변환 실패: ${appError.userMessage}';
       });
+      
+      AppErrorHandler.showError(context, e, onRetry: _testReverseGeocoding);
     } finally {
       setState(() {
         _isLoading = false;
@@ -355,6 +368,7 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 

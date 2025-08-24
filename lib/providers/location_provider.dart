@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../services/services.dart';
+import '../utils/error_handler.dart';
 
 /// 위치 정보 상태 관리
 class LocationProvider with ChangeNotifier {
@@ -42,7 +43,8 @@ class LocationProvider with ChangeNotifier {
       await _loadNearbyLocations();
       _clearError();
     } catch (e) {
-      _setError('위치 정보를 불러올 수 없습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     } finally {
       _setLoading(false);
     }
@@ -61,7 +63,8 @@ class LocationProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('위치 업데이트에 실패했습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     } finally {
       _setLoading(false);
     }
@@ -81,7 +84,8 @@ class LocationProvider with ChangeNotifier {
       _clearError();
       notifyListeners();
     } catch (e) {
-      _setError('GPS 위치를 가져올 수 없습니다: $e');
+      final appError = AppErrorHandler.analyzeError(e);
+      _setError(appError.userMessage);
     } finally {
       _setLoading(false);
     }

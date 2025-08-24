@@ -12,6 +12,7 @@ import 'recommendation_history_screen.dart';
 import 'settings_screen.dart';
 import 'swipe_recommendation_screen.dart';
 import 'kakao_api_test_screen.dart';
+import 'main_navigation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool showAppBar;

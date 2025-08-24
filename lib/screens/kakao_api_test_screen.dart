@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/services.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../widgets/performance_monitor_widget.dart';
 
 /// 카카오 API 테스트 전용 화면
 class KakaoApiTestScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
   bool _isApiKeyValid = false;
   Map<String, dynamic> _configStatus = {};
   UserLocation? _currentLocation;
+  String _debugInfo = '';
 
   @override
   void initState() {
@@ -185,7 +187,8 @@ class _KakaoApiTestScreenState extends State<KakaoApiTestScreen> {
   @override
   Widget build(BuildContext context) {
     
-    return Scaffold(
+    return PerformanceMonitorWidget(
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('카카오 API 테스트'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,

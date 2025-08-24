@@ -18,9 +18,9 @@ class FavoriteProvider with ChangeNotifier {
   String? _selectedCategory;
   double? _minRating;
 
-  // Getters
-  List<Favorite> get favorites => List.unmodifiable(_favorites);
-  List<Favorite> get filteredFavorites => List.unmodifiable(_filteredFavorites);
+  // Getters - 메모리 최적화
+  List<Favorite> get favorites => _favorites; // 읽기 전용으로 사용하므로 복사 불필요
+  List<Favorite> get filteredFavorites => _filteredFavorites; // 읽기 전용으로 사용하므로 복사 불필요
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasFavorites => _favorites.isNotEmpty;

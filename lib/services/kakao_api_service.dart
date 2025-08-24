@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/models.dart';
 import 'config_service.dart';
+import 'http_service.dart';
 
-/// 카카오 로컬 API 서비스
+/// 카카오 로컬 API 서비스 (최적화됨)
 class KakaoApiService {
   static const String _baseUrl = 'https://dapi.kakao.com/v2/local';
   
   final ConfigService _configService = ConfigService();
+  final HttpService _httpService = HttpService();
 
   static final KakaoApiService _instance = KakaoApiService._internal();
   factory KakaoApiService() => _instance;
@@ -47,12 +49,12 @@ class KakaoApiService {
         },
       );
 
-      final response = await http.get(
-        uri,
+      final response = await _httpService.get(
+        uri.toString(),
         headers: {
           'Authorization': 'KakaoAK $_apiKey',
-          'Content-Type': 'application/json',
         },
+        useCache: true, // 카테고리 검색은 캐싱 활용
       );
 
       if (response.statusCode == 200) {
@@ -98,12 +100,12 @@ class KakaoApiService {
         },
       );
 
-      final response = await http.get(
-        uri,
+      final response = await _httpService.get(
+        uri.toString(),
         headers: {
           'Authorization': 'KakaoAK $_apiKey',
-          'Content-Type': 'application/json',
         },
+        useCache: false, // 키워드 검색은 실시간성 중요
       );
 
       if (response.statusCode == 200) {
@@ -180,12 +182,12 @@ class KakaoApiService {
         },
       );
 
-      final response = await http.get(
-        uri,
+      final response = await _httpService.get(
+        uri.toString(),
         headers: {
           'Authorization': 'KakaoAK $_apiKey',
-          'Content-Type': 'application/json',
         },
+        useCache: true, // 주소 변환은 캐싱 활용 (동일 좌표 재요청 방지)
       );
 
       if (response.statusCode == 200) {
@@ -216,19 +218,13 @@ class KakaoApiService {
   Future<bool> isApiKeyValid() async {
     try {
       // 간단한 API 호출로 키 유효성 검사
-      final uri = Uri.parse('$_baseUrl/search/keyword.json').replace(
-        queryParameters: {
-          'query': '테스트',
-          'size': '1',
-        },
-      );
-
-      final response = await http.get(
-        uri,
+      final response = await _httpService.get(
+        '$_baseUrl/search/keyword.json?query=테스트&size=1',
         headers: {
           'Authorization': 'KakaoAK $_apiKey',
-          'Content-Type': 'application/json',
         },
+        useCache: false, // API 키 검증은 캐싱하지 않음
+        timeout: const Duration(seconds: 5), // 빠른 타임아웃
       );
 
       return response.statusCode == 200;

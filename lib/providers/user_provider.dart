@@ -209,16 +209,19 @@ class UserProvider with ChangeNotifier {
 
   // Private methods
   void _setLoading(bool loading) {
+    if (_isLoading == loading) return; // 불필요한 업데이트 방지
     _isLoading = loading;
     notifyListeners();
   }
 
   void _setError(String error) {
+    if (_error == error) return; // 동일한 에러 중복 방지
     _error = error;
     notifyListeners();
   }
 
   void _clearError() {
+    if (_error == null) return; // 이미 null인 경우 스킵
     _error = null;
   }
 } 

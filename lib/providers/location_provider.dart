@@ -11,10 +11,10 @@ class LocationProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  // Getters
+  // Getters - 메모리 최적화
   String get currentLocation => _currentLocation;
-  List<String> get favoriteLocations => List.unmodifiable(_favoriteLocations);
-  List<String> get nearbyLocations => List.unmodifiable(_nearbyLocations);
+  List<String> get favoriteLocations => _favoriteLocations; // 읽기 전용으로 사용하므로 복사 불필요
+  List<String> get nearbyLocations => _nearbyLocations; // 읽기 전용으로 사용하므로 복사 불필요
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -219,18 +219,21 @@ class LocationProvider with ChangeNotifier {
     }
   }
 
-  // Private methods
+  // Private methods - 메모리 최적화
   void _setLoading(bool loading) {
+    if (_isLoading == loading) return; // 불필요한 업데이트 방지
     _isLoading = loading;
     notifyListeners();
   }
 
   void _setError(String error) {
+    if (_error == error) return; // 동일한 에러 중복 방지
     _error = error;
     notifyListeners();
   }
 
   void _clearError() {
+    if (_error == null) return; // 이미 null인 경우 스킵
     _error = null;
   }
 } 

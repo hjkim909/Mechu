@@ -72,52 +72,53 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
           index: _currentIndex,
           children: _buildTabNavigators(),
         ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onTabTapped,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: colorScheme.surface,
-          selectedItemColor: colorScheme.primary,
-          unselectedItemColor: colorScheme.onSurfaceVariant,
-          selectedFontSize: 12,
-          unselectedFontSize: 11,
-          iconSize: 24,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home_outlined),
-              activeIcon: const Icon(Icons.home),
-              label: '홈',
-              tooltip: '메뉴 추천 홈',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.history_outlined),
-              activeIcon: const Icon(Icons.history),
-              label: '이력',
-              tooltip: '추천 이력',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.favorite_outline),
-              activeIcon: const Icon(Icons.favorite),
-              label: '즐겨찾기',
-              tooltip: '즐겨찾기 음식점',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.settings_outlined),
-              activeIcon: const Icon(Icons.settings),
-              label: '설정',
-              tooltip: '앱 설정',
-            ),
-          ],
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: _onTabTapped,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: colorScheme.surface,
+            selectedItemColor: colorScheme.primary,
+            unselectedItemColor: colorScheme.onSurfaceVariant,
+            selectedFontSize: 12,
+            unselectedFontSize: 11,
+            iconSize: 24,
+            items: [
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.home_outlined),
+                activeIcon: const Icon(Icons.home),
+                label: '홈',
+                tooltip: '메뉴 추천 홈',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.history_outlined),
+                activeIcon: const Icon(Icons.history),
+                label: '이력',
+                tooltip: '추천 이력',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.favorite_outline),
+                activeIcon: const Icon(Icons.favorite),
+                label: '즐겨찾기',
+                tooltip: '즐겨찾기 음식점',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.settings_outlined),
+                activeIcon: const Icon(Icons.settings),
+                label: '설정',
+                tooltip: '앱 설정',
+              ),
+            ],
+          ),
         ),
         // 디버그 모드에서만 표시되는 플로팅 액션 버튼
         floatingActionButton: kDebugMode ? _buildDebugFAB(context) : null,

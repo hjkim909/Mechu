@@ -746,7 +746,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// 특정 탭으로 이동하는 헬퍼 메서드
   void _navigateToTab(int tabIndex) {
     // MainNavigationScreen의 탭 전환을 위해 context를 통해 접근
-    final MainNavigationScreenState? mainNavState = 
+    final mainNavState = 
         context.findAncestorStateOfType<MainNavigationScreenState>();
     if (mainNavState != null) {
       mainNavState.switchToTab(tabIndex);

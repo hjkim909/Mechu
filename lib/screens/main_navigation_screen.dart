@@ -13,22 +13,41 @@ class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+  MainNavigationScreenState createState() => MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
+class MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  // 하단 탭에 표시될 화면들
-  late final List<Widget> _screens;
+  /// 외부에서 탭 전환을 위한 public 메서드
+  void switchToTab(int index) {
+    if (index >= 0 && index < _rootScreens.length && index != _currentIndex) {
+      setState(() {
+        _currentIndex = index;
+      });
+      _refreshDataIfNeeded(index);
+      _provideFeedback();
+    }
+  }
+
+  // 각 탭별 Navigator Key
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = [
+    GlobalKey<NavigatorState>(), // 홈
+    GlobalKey<NavigatorState>(), // 이력
+    GlobalKey<NavigatorState>(), // 즐겨찾기
+    GlobalKey<NavigatorState>(), // 설정
+  ];
+
+  // 각 탭의 루트 화면들
+  late final List<Widget> _rootScreens;
   
   @override
   void initState() {
     super.initState();
-    _screens = [
+    _rootScreens = [
       const HomeScreen(showAppBar: false), // 홈 화면 (앱바 숨김)
       const RecommendationHistoryScreen(showAppBar: false), // 추천 이력
-      const FavoriteScreen(), // 즐겨찾기 화면 (새로 만들 예정)
+      const FavoriteScreen(), // 즐겨찾기 화면
       const SettingsScreen(showAppBar: false), // 설정 화면 (앱바 숨김)
     ];
   }
@@ -38,11 +57,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+    return WillPopScope(
+      onWillPop: () async {
+        // 현재 탭의 Navigator에서 뒤로 가기 처리
+        final currentNavigator = _navigatorKeys[_currentIndex].currentState;
+        if (currentNavigator != null && currentNavigator.canPop()) {
+          currentNavigator.pop();
+          return false; // 앱 종료 방지
+        }
+        return true; // 앱 종료 허용
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _buildTabNavigators(),
+        ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -90,23 +119,43 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             ),
           ],
         ),
+        // 디버그 모드에서만 표시되는 플로팅 액션 버튼
+        floatingActionButton: kDebugMode ? _buildDebugFAB(context) : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
       ),
-      // 디버그 모드에서만 표시되는 플로팅 액션 버튼
-      floatingActionButton: kDebugMode ? _buildDebugFAB(context) : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
     );
   }
 
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
+  // 각 탭별 Navigator 빌드
+  List<Widget> _buildTabNavigators() {
+    return List.generate(_rootScreens.length, (index) {
+      return Navigator(
+        key: _navigatorKeys[index],
+        onGenerateRoute: (routeSettings) {
+          return MaterialPageRoute(
+            builder: (context) => _rootScreens[index],
+            settings: routeSettings,
+          );
+        },
+      );
     });
+  }
+
+  void _onTabTapped(int index) {
+    if (_currentIndex == index) {
+      // 같은 탭을 다시 누르면 해당 탭의 루트로 이동
+      _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+    } else {
+      setState(() {
+        _currentIndex = index;
+      });
+      
+      // 필요한 경우 데이터 새로고침
+      _refreshDataIfNeeded(index);
+    }
     
     // 탭 변경 시 햅틱 피드백
     _provideFeedback();
-    
-    // 필요한 경우 데이터 새로고침
-    _refreshDataIfNeeded(index);
   }
 
   void _provideFeedback() {
@@ -161,8 +210,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               title: const Text('카카오 API 테스트'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
+                // 현재 탭의 Navigator를 사용하여 이동
+                _navigatorKeys[_currentIndex].currentState?.push(
                   PageTransitions.slideFromRight(const KakaoApiTestScreen()),
                 );
               },

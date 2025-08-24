@@ -223,11 +223,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              Navigator.of(context).push(
-                PageTransitions.fadeWithScale(
-                  const SettingsScreen(),
-                ),
-              );
+              // 설정 탭으로 전환 (탭 인덱스 3)
+              _navigateToTab(3);
             },
           ),
         ],
@@ -739,17 +736,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// 추천 이력 화면으로 이동
   void _navigateToHistory() {
     HapticFeedback.lightImpact();
-    Navigator.of(context).push(
-      PageTransitions.slideFromRight(
-        const RecommendationHistoryScreen(),
-      ),
-    );
+    // 이력 탭으로 전환 (탭 인덱스 1)
+    _navigateToTab(1);
   }
 
-  /// 즐겨찾기 화면으로 이동 (미구현)
+  /// 특정 탭으로 이동하는 헬퍼 메서드
+  void _navigateToTab(int tabIndex) {
+    // MainNavigationScreen의 탭 전환을 위해 context를 통해 접근
+    final MainNavigationScreenState? mainNavState = 
+        context.findAncestorStateOfType<MainNavigationScreenState>();
+    if (mainNavState != null) {
+      mainNavState.switchToTab(tabIndex);
+    }
+  }
+
+  /// 즐겨찾기 화면으로 이동
   void _navigateToFavorites() {
     HapticFeedback.lightImpact();
-    // TODO: 즐겨찾기 화면 구현 후 연결
+    // 즐겨찾기 탭으로 전환 (탭 인덱스 2)
+    _navigateToTab(2);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(

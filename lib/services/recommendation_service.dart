@@ -403,4 +403,16 @@ class RecommendationService {
 
     return reasons.isEmpty ? '추천 맛집' : reasons.join(', ');
   }
+
+  /// 오프라인 모드용 추천 데이터 가져오기
+  Future<List<Restaurant>> _getOfflineRecommendations(RecommendationRequest request) async {
+    final String category = request.preferences?.preferredCategories.first ?? '일반';
+    final String location = request.location ?? '현재 위치';
+    
+    return await _cacheService.getOfflineRecommendations(
+      category: category,
+      location: location,
+      count: 10,
+    );
+  }
 } 

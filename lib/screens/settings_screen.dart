@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 import '../providers/providers.dart';
+import '../utils/page_transitions.dart';
+import 'kakao_api_test_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -167,6 +170,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildAppSettingsCard(),
 
                 const SizedBox(height: 24),
+
+                // 개발자 도구 섹션 (디버그 모드에서만 표시)
+                if (kDebugMode) ...[
+                  _buildSectionTitle('개발자 도구', Icons.code),
+                  const SizedBox(height: 8),
+                  _buildDeveloperCard(),
+                  const SizedBox(height: 24),
+                ],
 
                 // 정보 섹션
                 _buildSectionTitle('정보', Icons.info),
@@ -763,5 +774,61 @@ class _FoodPreferencesDialogState extends State<_FoodPreferencesDialog> {
       default:
         return '보통';
     }
+  }
+
+  Widget _buildDeveloperCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(
+              Icons.api,
+              color: colorScheme.primary,
+            ),
+            title: const Text('카카오 API 테스트'),
+            subtitle: const Text('카카오 맵 API 연동 상태를 확인하고 테스트합니다'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.of(context).push(
+                PageTransitions.fadeWithScale(
+                  const KakaoApiTestScreen(),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: Icon(
+              Icons.code,
+              color: colorScheme.primary,
+            ),
+            title: const Text('앱 정보'),
+            subtitle: const Text('디버그 모드로 실행 중'),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'DEBUG',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 } 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'location_setting_screen.dart';
 import 'recommendation_history_screen.dart';
 import 'settings_screen.dart';
 import 'swipe_recommendation_screen.dart';
+import 'kakao_api_test_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -200,6 +202,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: colorScheme.surface,
         elevation: 0,
         actions: [
+          // 개발자 테스트 버튼 (디버그 모드에서만 표시)
+          if (kDebugMode)
+            IconButton(
+              icon: const Icon(Icons.bug_report),
+              tooltip: '카카오 API 테스트',
+              onPressed: () {
+                Navigator.of(context).push(
+                  PageTransitions.fadeWithScale(
+                    const KakaoApiTestScreen(),
+                  ),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {

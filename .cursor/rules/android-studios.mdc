@@ -1,0 +1,8 @@
+
+---
+description: do not use flutter command
+
+globs:
+alwaysApply: false
+---
+The user prefers not to run flutter doctor; they conduct testing and actual execution separately in Android Studio.

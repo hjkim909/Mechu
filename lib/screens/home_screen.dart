@@ -211,11 +211,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           if (kDebugMode)
             IconButton(
               icon: const Icon(Icons.bug_report),
-              tooltip: '카카오 API 테스트',
+              tooltip: '개발자 도구',
               onPressed: () {
-                Navigator.of(context).push(
-                  PageTransitions.fadeWithScale(
-                    const KakaoApiTestScreen(),
+                // 설정 탭으로 전환하고 개발자 도구 접근
+                _navigateToTab(3);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('설정 > 개발자 도구에서 API 테스트를 확인하세요'),
+                    duration: Duration(seconds: 2),
                   ),
                 );
               },

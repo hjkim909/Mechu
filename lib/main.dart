@@ -128,6 +128,6 @@ class _AppInitializerState extends State<AppInitializer> {
 
   @override
   Widget build(BuildContext context) {
-    return const HomeScreen();
+    return const MainNavigationScreen();
   }
 } 

@@ -542,6 +542,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'system';
     }
   }
+
+  Widget _buildDeveloperCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(
+              Icons.api,
+              color: colorScheme.primary,
+            ),
+            title: const Text('카카오 API 테스트'),
+            subtitle: const Text('카카오 맵 API 연동 상태를 확인하고 테스트합니다'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.of(context).push(
+                PageTransitions.fadeWithScale(
+                  const KakaoApiTestScreen(),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: Icon(
+              Icons.code,
+              color: colorScheme.primary,
+            ),
+            title: const Text('앱 정보'),
+            subtitle: const Text('디버그 모드로 실행 중'),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'DEBUG',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // 사용자 프로필 다이얼로그
@@ -774,61 +830,5 @@ class _FoodPreferencesDialogState extends State<_FoodPreferencesDialog> {
       default:
         return '보통';
     }
-  }
-
-  Widget _buildDeveloperCard() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          ListTile(
-            leading: Icon(
-              Icons.api,
-              color: colorScheme.primary,
-            ),
-            title: const Text('카카오 API 테스트'),
-            subtitle: const Text('카카오 맵 API 연동 상태를 확인하고 테스트합니다'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              Navigator.of(context).push(
-                PageTransitions.fadeWithScale(
-                  const KakaoApiTestScreen(),
-                ),
-              );
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: Icon(
-              Icons.code,
-              color: colorScheme.primary,
-            ),
-            title: const Text('앱 정보'),
-            subtitle: const Text('디버그 모드로 실행 중'),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'DEBUG',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onPrimaryContainer,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 } 

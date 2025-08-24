@@ -63,7 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       
       _showSuccessSnackBar('설정이 저장되었습니다');
     } catch (e) {
-      _showErrorSnackBar('설정 저장 중 오류가 발생했습니다');
+      _showError(e);
     }
   }
 
@@ -391,7 +391,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icons.description,
             onTap: () {
               // TODO: 이용약관 화면으로 이동
-              _showErrorSnackBar('준비 중인 기능입니다');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('준비 중인 기능입니다'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
             },
           ),
           const Divider(height: 1),
@@ -401,7 +406,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icons.privacy_tip,
             onTap: () {
               // TODO: 개인정보 처리방침 화면으로 이동
-              _showErrorSnackBar('준비 중인 기능입니다');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('준비 중인 기능입니다'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
             },
           ),
         ],

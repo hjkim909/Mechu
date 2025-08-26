@@ -249,10 +249,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 vertical: 12,
                               ),
                               decoration: BoxDecoration(
-                                color: colorScheme.primaryContainer.withOpacity(0.7),
+                                color: theme.colorScheme.primaryContainer.withOpacity(0.7),
                                 borderRadius: BorderRadius.circular(25),
                                 border: Border.all(
-                                  color: colorScheme.outline.withOpacity(0.2),
+                                  color: theme.colorScheme.outline.withOpacity(0.2),
                                   width: 1,
                                 ),
                               ),
@@ -261,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 children: [
                                   Icon(
                                     Icons.location_on,
-                                    color: colorScheme.onPrimaryContainer,
+                                    color: theme.colorScheme.onPrimaryContainer,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -271,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           ? '현재 위치'
                                           : locationProvider.currentLocation,
                                       style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: colorScheme.onPrimaryContainer,
+                                        color: theme.colorScheme.onPrimaryContainer,
                                         fontWeight: FontWeight.w600,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -280,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   const SizedBox(width: 4),
                                   Icon(
                                     Icons.edit,
-                                    color: colorScheme.onPrimaryContainer,
+                                    color: theme.colorScheme.onPrimaryContainer,
                                     size: 16,
                                   ),
                                 ],
@@ -296,18 +296,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               icon: Icon(
                                 Icons.my_location,
                                 size: 20,
-                                color: colorScheme.onPrimary,
+                                color: theme.colorScheme.onPrimary,
                               ),
                               label: Text(
                                 '현재 위치로 설정하기',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: colorScheme.onPrimary,
+                                  color: theme.colorScheme.onPrimary,
                                 ),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: colorScheme.primary,
-                                foregroundColor: colorScheme.onPrimary,
+                                backgroundColor: theme.colorScheme.primary,
+                                foregroundColor: theme.colorScheme.onPrimary,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -367,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 trackHeight: 6,
                                 valueIndicatorColor: colorScheme.primary,
                                 valueIndicatorTextStyle: TextStyle(
-                                  color: colorScheme.onPrimary,
+                                  color: theme.colorScheme.onPrimary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -436,7 +436,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
-                                        color: colorScheme.onPrimary,
+                                        color: theme.colorScheme.onPrimary,
                                         strokeWidth: 2,
                                       ),
                                     ),
@@ -446,7 +446,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: colorScheme.onPrimary,
+                                        color: theme.colorScheme.onPrimary,
                                       ),
                                     ),
                                   ],
@@ -457,7 +457,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     Icon(
                                       Icons.restaurant_menu,
                                       size: 28,
-                                      color: colorScheme.onPrimary,
+                                      color: theme.colorScheme.onPrimary,
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
@@ -465,7 +465,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: colorScheme.onPrimary,
+                                        color: theme.colorScheme.onPrimary,
                                       ),
                                     ),
                                   ],

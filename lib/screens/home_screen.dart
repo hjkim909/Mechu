@@ -243,13 +243,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20.0,
-                      vertical: 16.0,
+                      vertical: 8.0,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // 상단 여백
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
 
                         // 현재 위치 표시 (터치 가능)
                         Consumer<LocationProvider>(
@@ -601,7 +601,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         _buildQuickActionButtons(),
 
                         // 하단 여백
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 4),
                       ],
                     ),
                   ),

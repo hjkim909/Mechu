@@ -460,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                         ),
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 8),
 
                         // 추천 버튼
                         Consumer<RecommendationProvider>(
@@ -595,7 +595,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           },
                         ),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
 
                         // 추천 이력 및 즐겨찾기 버튼
                         _buildQuickActionButtons(),

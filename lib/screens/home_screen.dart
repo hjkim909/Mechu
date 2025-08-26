@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _getCurrentLocation() async {
     try {
       final locationProvider = context.read<LocationProvider>();
-      await locationProvider.updateCurrentLocation();
+      await locationProvider.getCurrentLocationFromGPS();
       
       if (mounted) {
         // 성공 햅틱
@@ -195,11 +195,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           '메뉴 추천',
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         centerTitle: true,
-        backgroundColor: colorScheme.surface,
+        backgroundColor: theme.colorScheme.surface,
         elevation: 0,
         actions: [
           // 개발자 테스트 버튼 (디버그 모드에서만 표시)
@@ -339,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             children: [
                               Icon(
                                 Icons.group,
-                                color: colorScheme.primary,
+                                color: theme.colorScheme.primary,
                                 size: 24,
                               ),
                               const SizedBox(width: 8),
@@ -347,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 '${_peopleCount.round()}명을 위한 추천',
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: colorScheme.onSurface,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -360,12 +360,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
-                                activeTrackColor: colorScheme.primary,
-                                inactiveTrackColor: colorScheme.outline.withOpacity(0.3),
-                                thumbColor: colorScheme.primary,
-                                overlayColor: colorScheme.primary.withOpacity(0.2),
+                                activeTrackColor: theme.colorScheme.primary,
+                                inactiveTrackColor: theme.colorScheme.outline.withOpacity(0.3),
+                                thumbColor: theme.colorScheme.primary,
+                                overlayColor: theme.colorScheme.primary.withOpacity(0.2),
                                 trackHeight: 6,
-                                valueIndicatorColor: colorScheme.primary,
+                                valueIndicatorColor: theme.colorScheme.primary,
                                 valueIndicatorTextStyle: TextStyle(
                                   color: theme.colorScheme.onPrimary,
                                   fontWeight: FontWeight.w600,
@@ -391,13 +391,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 Text(
                                   '1명',
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
+                                    color: theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 Text(
                                   '10명',
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
+                                    color: theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -421,8 +421,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _getRecommendations,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: colorScheme.onPrimary,
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -506,7 +506,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   onPressed: _navigateToHistory,
                   icon: Icon(
                     Icons.history,
-                    color: colorScheme.onSecondaryContainer,
+                    color: theme.colorScheme.onSecondaryContainer,
                     size: 20,
                   ),
                   label: Column(
@@ -517,21 +517,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         '추천 이력',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: colorScheme.onSecondaryContainer,
+                          color: theme.colorScheme.onSecondaryContainer,
                         ),
                       ),
                       if (historyProvider.hasHistories)
                         Text(
                           '${historyProvider.historyCount}개',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSecondaryContainer.withOpacity(0.7),
+                            color: theme.colorScheme.onSecondaryContainer.withOpacity(0.7),
                           ),
                         ),
                     ],
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.secondaryContainer,
-                    foregroundColor: colorScheme.onSecondaryContainer,
+                    backgroundColor: theme.colorScheme.secondaryContainer,
+                    foregroundColor: theme.colorScheme.onSecondaryContainer,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -553,7 +553,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   onPressed: _navigateToFavorites,
                   icon: Icon(
                     Icons.favorite,
-                    color: colorScheme.onTertiaryContainer,
+                    color: theme.colorScheme.onTertiaryContainer,
                     size: 20,
                   ),
                   label: Column(
@@ -564,21 +564,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         '즐겨찾기',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: colorScheme.onTertiaryContainer,
+                          color: theme.colorScheme.onTertiaryContainer,
                         ),
                       ),
                       if (favoriteProvider.hasFavorites)
                         Text(
                           '${favoriteProvider.favoriteCount}개',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onTertiaryContainer.withOpacity(0.7),
+                            color: theme.colorScheme.onTertiaryContainer.withOpacity(0.7),
                           ),
                         ),
                     ],
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.tertiaryContainer,
-                    foregroundColor: colorScheme.onTertiaryContainer,
+                    backgroundColor: theme.colorScheme.tertiaryContainer,
+                    foregroundColor: theme.colorScheme.onTertiaryContainer,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -628,7 +628,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ],
         ),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),

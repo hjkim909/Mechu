@@ -96,11 +96,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _getCurrentLocation() async {
     try {
       final locationProvider = context.read<LocationProvider>();
-      await locationProvider.getCurrentLocation();
+      await locationProvider.updateCurrentLocation();
       
       if (mounted) {
         // 성공 햅틱
-        HapticFeedback.notificationImpact(NotificationHapticType.success);
+        HapticFeedback.lightImpact();
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -147,7 +147,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             action: SnackBarAction(
               label: '설정',
               textColor: Colors.white,
-              onPressed: () => locationProvider.openAppSettings(),
+              onPressed: () {
+                final locationProvider = context.read<LocationProvider>();
+                locationProvider.openAppSettings();
+              },
             ),
           ),
         );

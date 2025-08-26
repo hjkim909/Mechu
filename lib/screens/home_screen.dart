@@ -33,12 +33,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<double> _buttonScaleAnimation;
   late AnimationController _successAnimationController;
   late Animation<double> _successScaleAnimation;
+  late Animation<Color?> _successColorAnimation;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedSettings();
     _initializeAnimations();
+    _loadUserPreferences();
   }
 
   @override
@@ -49,8 +50,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _initializeAnimations() {
+    // 버튼 터치 애니메이션
     _buttonAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 150),
       vsync: this,
     );
     _buttonScaleAnimation = Tween<double>(
@@ -61,8 +63,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       curve: Curves.easeInOut,
     ));
 
+    // 성공 애니메이션
     _successAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
     _successScaleAnimation = Tween<double>(
@@ -72,45 +75,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       parent: _successAnimationController,
       curve: Curves.elasticOut,
     ));
+    _successColorAnimation = ColorTween(
+      begin: null,
+      end: Colors.green,
+    ).animate(CurvedAnimation(
+      parent: _successAnimationController,
+      curve: Curves.easeInOut,
+    ));
   }
 
-  /// 저장된 설정 불러오기
-  void _loadSavedSettings() {
-    final savedNumberOfPeople = PreferencesService.getSelectedNumberOfPeople();
-    setState(() {
-      _peopleCount = savedNumberOfPeople.toDouble();
-    });
+  Future<void> _loadUserPreferences() async {
+    final savedCount = await PreferencesService.getSelectedNumberOfPeople();
+    if (mounted && savedCount != _peopleCount.round()) {
+      setState(() {
+        _peopleCount = savedCount.toDouble();
+      });
+    }
   }
 
-  Future<void> _navigateToLocationSetting() async {
-    // 햅틱 피드백
-    HapticFeedback.lightImpact();
-    
-    await Navigator.of(context).push(
-      PageTransitions.slideFromBottom(
-        const LocationSettingScreen(),
-      ),
-    );
-  }
-
-  /// GPS를 통한 현재 위치 가져오기
-  Future<void> _getCurrentLocationFromGPS() async {
-    final locationProvider = context.read<LocationProvider>();
-    
-    // 햅틱 피드백
-    HapticFeedback.mediumImpact();
-    
+  Future<void> _getCurrentLocation() async {
     try {
-      await locationProvider.getCurrentLocationFromGPS();
+      final locationProvider = context.read<LocationProvider>();
+      await locationProvider.getCurrentLocation();
       
       if (mounted) {
-        // 성공 애니메이션
-        _successAnimationController.forward().then((_) {
-          _successAnimationController.reverse();
-        });
-        
         // 성공 햅틱
-        HapticFeedback.lightImpact();
+        HapticFeedback.notificationImpact(NotificationHapticType.success);
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -119,12 +109,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 const Icon(Icons.check_circle, color: Colors.white),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('현재 위치를 ${locationProvider.currentLocation}(으)로 설정했습니다'),
+                  child: Text('현재 위치: ${locationProvider.currentLocation}'),
                 ),
               ],
             ),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.green.shade600,
+            backgroundColor: Colors.green,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -236,377 +226,261 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ) : null,
       body: NetworkStatusBanner(
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 8.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // 상단 여백
-                        const SizedBox(height: 4),
-
-                        // 현재 위치 표시 (터치 가능)
-                        Consumer<LocationProvider>(
-                          builder: (context, locationProvider, child) {
-                            return Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: _navigateToLocationSetting,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 16,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.primaryContainer,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: colorScheme.primary.withOpacity(0.3),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (locationProvider.isLoading)
-                                          SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: colorScheme.onPrimaryContainer,
-                                            ),
-                                          )
-                                        else
-                                          Icon(
-                                            Icons.location_on,
-                                            color: colorScheme.onPrimaryContainer,
-                                            size: 20,
-                                          ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          locationProvider.currentLocation,
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            color: colorScheme.onPrimaryContainer,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Icon(
-                                          Icons.edit,
-                                          color: colorScheme.onPrimaryContainer.withOpacity(0.7),
-                                          size: 16,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 현재 위치 표시 (터치 가능)
+                  Consumer<LocationProvider>(
+                    builder: (context, locationProvider, child) {
+                      return Column(
+                        children: [
+                          GestureDetector(
+                            onTap: _getCurrentLocation,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primaryContainer.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(25),
+                                border: Border.all(
+                                  color: colorScheme.outline.withOpacity(0.2),
+                                  width: 1,
                                 ),
-                                
-                                const SizedBox(height: 12),
-                                
-                                // GPS 현재 위치 버튼
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    onPressed: locationProvider.isLoading 
-                                        ? null 
-                                        : () => _getCurrentLocationFromGPS(),
-                                    icon: Icon(
-                                      Icons.my_location,
-                                      size: 18,
-                                      color: colorScheme.onPrimary,
-                                    ),
-                                    label: Text(
-                                      '📍 현재 위치로 설정하기',
-                                      style: TextStyle(
-                                        color: colorScheme.onPrimary,
-                                        fontSize: 14,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    color: colorScheme.onPrimaryContainer,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      locationProvider.currentLocation.isEmpty
+                                          ? '현재 위치'
+                                          : locationProvider.currentLocation,
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: colorScheme.onPrimaryContainer,
                                         fontWeight: FontWeight.w600,
                                       ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: colorScheme.primary,
-                                      elevation: 2,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                        vertical: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(24),
-                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                ),
-                                
-                                if (locationProvider.error != null) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    locationProvider.error!,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: colorScheme.error,
-                                    ),
-                                    textAlign: TextAlign.center,
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.edit,
+                                    color: colorScheme.onPrimaryContainer,
+                                    size: 16,
                                   ),
                                 ],
-                              ],
-                            );
-                          },
-                        ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // 현재 위치로 설정하기 버튼
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _getCurrentLocation,
+                              icon: Icon(
+                                Icons.my_location,
+                                size: 20,
+                                color: colorScheme.onPrimary,
+                              ),
+                              label: Text(
+                                '현재 위치로 설정하기',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onPrimary,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colorScheme.primary,
+                                foregroundColor: colorScheme.onPrimary,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
 
-                        // 중간 여백
-                        const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
-                        // 인원수 선택 섹션
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(28),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.shadow.withOpacity(0.08),
-                                blurRadius: 16,
-                                offset: const Offset(0, 4),
+                  // 인원수 선택
+                  Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          // 제목
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.group,
+                                color: colorScheme.primary,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${_peopleCount.round()}명을 위한 추천',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
+                                ),
                               ),
                             ],
                           ),
-                          child: Column(
-                            children: [
-                              // 인원수 표시
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.people,
-                                    color: colorScheme.primary,
-                                    size: 24,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    '${_peopleCount.round()}명을 위한 추천',
-                                    style: theme.textTheme.titleLarge?.copyWith(
-                                      color: colorScheme.onSurface,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              
-                              const SizedBox(height: 16),
-                              
-                              // 슬라이더
-                              Semantics(
-                                label: '인원수 선택',
-                                hint: '현재 ${_peopleCount.round()}명 선택됨',
-                                child: SliderTheme(
-                                  data: SliderTheme.of(context).copyWith(
-                                    activeTrackColor: colorScheme.primary,
-                                    inactiveTrackColor: colorScheme.primary.withOpacity(0.2),
-                                    thumbColor: colorScheme.primary,
-                                    overlayColor: colorScheme.primary.withOpacity(0.2),
-                                    thumbShape: const RoundSliderThumbShape(
-                                      enabledThumbRadius: 14,
-                                      pressedElevation: 8,
-                                    ),
-                                    overlayShape: const RoundSliderOverlayShape(
-                                      overlayRadius: 28,
-                                    ),
-                                    trackHeight: 6,
-                                    valueIndicatorColor: colorScheme.primary,
-                                    valueIndicatorTextStyle: TextStyle(
-                                      color: colorScheme.onPrimary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  child: Slider(
-                                    value: _peopleCount,
-                                    min: 1,
-                                    max: 10,
-                                    divisions: 9,
-                                    label: '${_peopleCount.round()}명',
-                                    onChanged: _onSliderChanged,
-                                  ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // 슬라이더
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                activeTrackColor: colorScheme.primary,
+                                inactiveTrackColor: colorScheme.outline.withOpacity(0.3),
+                                thumbColor: colorScheme.primary,
+                                overlayColor: colorScheme.primary.withOpacity(0.2),
+                                trackHeight: 6,
+                                valueIndicatorColor: colorScheme.primary,
+                                valueIndicatorTextStyle: TextStyle(
+                                  color: colorScheme.onPrimary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              
-                              // 슬라이더 범위 표시
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              child: Slider(
+                                value: _peopleCount,
+                                min: 1,
+                                max: 10,
+                                divisions: 9,
+                                label: '${_peopleCount.round()}명',
+                                onChanged: _onSliderChanged,
+                              ),
+                            ),
+                          ),
+                          
+                          // 슬라이더 범위 표시
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '1명',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                Text(
+                                  '10명',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 추천 버튼 (높이 대폭 축소)
+                  Consumer<RecommendationProvider>(
+                    builder: (context, recommendationProvider, child) {
+                      final isLoading = recommendationProvider.isLoading;
+                      
+                      return Container(
+                        width: double.infinity,
+                        height: 80, // 150에서 80으로 대폭 축소
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _getRecommendations,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: isLoading
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      '1명',
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: colorScheme.onSurfaceVariant,
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: colorScheme.onPrimary,
+                                        strokeWidth: 2,
                                       ),
                                     ),
+                                    const SizedBox(width: 12),
                                     Text(
-                                      '10명',
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: colorScheme.onSurfaceVariant,
+                                      '메뉴 찾는 중...',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: colorScheme.onPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.restaurant_menu,
+                                      size: 28,
+                                      color: colorScheme.onPrimary,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      '메뉴 추천',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: colorScheme.onPrimary,
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
                         ),
-
-                        const SizedBox(height: 8),
-
-                        // 추천 버튼
-                        Consumer<RecommendationProvider>(
-                          builder: (context, recommendationProvider, child) {
-                            final isLoading = recommendationProvider.isLoading;
-                            
-                            return Semantics(
-                              label: '메뉴 추천받기',
-                              hint: isLoading ? '추천을 받는 중입니다' : '${_peopleCount.round()}명을 위한 메뉴를 추천받습니다',
-                              button: true,
-                              enabled: !isLoading,
-                              child: AnimatedBuilder(
-                                animation: _successScaleAnimation,
-                                builder: (context, child) {
-                                  return Transform.scale(
-                                    scale: _successScaleAnimation.value,
-                                    child: AnimatedButton(
-                                      onTap: isLoading ? null : _getRecommendations,
-                                      scaleValue: 0.96,
-                                      child: PulseAnimation(
-                                        duration: const Duration(seconds: 2),
-                                        minScale: 1.0,
-                                        maxScale: isLoading ? 1.0 : 1.01,
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: 100,
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: isLoading ? [
-                                                colorScheme.surfaceContainerHighest,
-                                                colorScheme.surfaceContainerHigh,
-                                              ] : [
-                                                colorScheme.primary,
-                                                colorScheme.primaryContainer,
-                                                colorScheme.primary.withOpacity(0.9),
-                                              ],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                              stops: const [0.0, 0.5, 1.0],
-                                            ),
-                                            borderRadius: BorderRadius.circular(32),
-                                            boxShadow: isLoading ? [
-                                              BoxShadow(
-                                                color: colorScheme.shadow.withOpacity(0.1),
-                                                blurRadius: 12,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                            ] : [
-                                              BoxShadow(
-                                                color: colorScheme.primary.withOpacity(0.3),
-                                                blurRadius: 24,
-                                                offset: const Offset(0, 12),
-                                              ),
-                                              BoxShadow(
-                                                color: colorScheme.primary.withOpacity(0.1),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                            ],
-                                            border: isLoading ? Border.all(
-                                              color: colorScheme.outline.withOpacity(0.2),
-                                              width: 1,
-                                            ) : null,
-                                          ),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 20,
-                                              vertical: 16,
-                                            ),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                // 아이콘 또는 로딩 인디케이터
-                                                AnimatedSwitcher(
-                                                  duration: const Duration(milliseconds: 300),
-                                                  child: isLoading
-                                                      ? SizedBox(
-                                                          width: 32,
-                                                          height: 32,
-                                                          child: CircularProgressIndicator(
-                                                            color: colorScheme.onSurfaceVariant,
-                                                            strokeWidth: 3,
-                                                          ),
-                                                        )
-                                                      : Icon(
-                                                          Icons.restaurant_menu,
-                                                          size: 32,
-                                                          color: colorScheme.onPrimary,
-                                                        ),
-                                                ),
-                                                
-                                                const SizedBox(height: 10),
-                                                
-                                                // 버튼 텍스트
-                                                AnimatedSwitcher(
-                                                  duration: const Duration(milliseconds: 300),
-                                                  child: Text(
-                                                    isLoading ? '메뉴를 찾는 중...' : '🍽️ 지금 추천받기!',
-                                                    key: ValueKey(isLoading),
-                                                    style: theme.textTheme.titleLarge?.copyWith(
-                                                      color: isLoading 
-                                                          ? colorScheme.onSurfaceVariant 
-                                                          : colorScheme.onPrimary,
-                                                      fontWeight: FontWeight.w700,
-                                                      letterSpacing: 0.5,
-                                                    ),
-                                                    textAlign: TextAlign.center,
-                                                  ),
-                                                ),
-                                                
-                                                if (!isLoading) ...[
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    '${_peopleCount.round()}명 맞춤 추천',
-                                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                                      color: colorScheme.onPrimary.withOpacity(0.9),
-                                                      fontWeight: FontWeight.w500,
-                                                    ),
-                                                    textAlign: TextAlign.center,
-                                                  ),
-                                                ],
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        // 추천 이력 및 즐겨찾기 버튼
-                        _buildQuickActionButtons(),
-
-                        // 하단 여백
-                        const SizedBox(height: 4),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-              );
-            },
+
+                  const SizedBox(height: 16),
+
+                  // 빠른 액션 버튼들 (높이 축소)
+                  _buildQuickActionButtons(),
+
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -620,109 +494,93 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Row(
       children: [
-        // 추천 이력 버튼
         Expanded(
           child: Consumer<RecommendationHistoryProvider>(
             builder: (context, historyProvider, child) {
-              return AnimatedButton(
-                onTap: () => _navigateToHistory(),
-                scaleValue: 0.96,
-                child: Container(
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: colorScheme.outline.withOpacity(0.3),
-                      width: 1,
-                    ),
+              return Container(
+                height: 50, // 80에서 50으로 축소
+                child: ElevatedButton.icon(
+                  onPressed: _navigateToHistory,
+                  icon: Icon(
+                    Icons.history,
+                    color: colorScheme.onSecondaryContainer,
+                    size: 20,
                   ),
-                  child: Row(
+                  label: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.history,
-                        color: colorScheme.onSurfaceVariant,
-                        size: 20,
+                      Text(
+                        '추천 이력',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSecondaryContainer,
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '추천 이력',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                      if (historyProvider.hasHistories)
+                        Text(
+                          '${historyProvider.historyCount}개',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSecondaryContainer.withOpacity(0.7),
                           ),
-                          if (historyProvider.hasHistories)
-                            Text(
-                              '${historyProvider.historyCount}개',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant.withOpacity(0.7),
-                              ),
-                            ),
-                        ],
-                      ),
+                        ),
                     ],
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.secondaryContainer,
+                    foregroundColor: colorScheme.onSecondaryContainer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    elevation: 2,
                   ),
                 ),
               );
             },
           ),
         ),
-
         const SizedBox(width: 12),
-
-        // 즐겨찾기 버튼
         Expanded(
           child: Consumer<FavoriteProvider>(
             builder: (context, favoriteProvider, child) {
-              return AnimatedButton(
-                onTap: () => _navigateToFavorites(),
-                scaleValue: 0.96,
-                child: Container(
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: colorScheme.outline.withOpacity(0.3),
-                      width: 1,
-                    ),
+              return Container(
+                height: 50, // 80에서 50으로 축소
+                child: ElevatedButton.icon(
+                  onPressed: _navigateToFavorites,
+                  icon: Icon(
+                    Icons.favorite,
+                    color: colorScheme.onTertiaryContainer,
+                    size: 20,
                   ),
-                  child: Row(
+                  label: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.favorite,
-                        color: Colors.red.shade600,
-                        size: 20,
+                      Text(
+                        '즐겨찾기',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onTertiaryContainer,
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '즐겨찾기',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                      if (favoriteProvider.hasFavorites)
+                        Text(
+                          '${favoriteProvider.favoriteCount}개',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onTertiaryContainer.withOpacity(0.7),
                           ),
-                          if (favoriteProvider.hasFavorites)
-                            Text(
-                              '${favoriteProvider.favoriteCount}개',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant.withOpacity(0.7),
-                              ),
-                            ),
-                        ],
-                      ),
+                        ),
                     ],
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.tertiaryContainer,
+                    foregroundColor: colorScheme.onTertiaryContainer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    elevation: 2,
                   ),
                 ),
               );
@@ -761,11 +619,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: [
             const Icon(Icons.info_outline, color: Colors.white),
             const SizedBox(width: 8),
-            const Text('즐겨찾기 화면을 준비 중입니다'),
+            const Expanded(
+              child: Text('즐겨찾기 기능이 추가되었습니다'),
+            ),
           ],
         ),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.blue.shade600,
+        backgroundColor: colorScheme.primary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -773,4 +633,4 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
-} 
+}

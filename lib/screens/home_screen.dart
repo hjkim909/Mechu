@@ -239,13 +239,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
-                child: IntrinsicHeight(
-                  child: Padding(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20.0,
                       vertical: 16.0,
@@ -606,16 +601,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         _buildQuickActionButtons(),
 
                         // 하단 여백
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                       ],
                     ),
                   ),
-                ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
-      ),
       ),
     );
   }
